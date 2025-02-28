@@ -18,7 +18,8 @@
 
 #define TAG "Application"
 
-
+//test
+AlarmManager* alarm_m_ = nullptr;
 static const char* const STATE_STRINGS[] = {
     "unknown",
     "starting",
@@ -588,9 +589,10 @@ void Application::MainLoop() {
             }
         }
         if(alarm_m_ != nullptr){
-            if(alarm_m_->IsRing()){
+                if(alarm_m_->IsRing()){
+                SetDeviceState(kDeviceStateSpeaking);
                 PlayLocalFile(Lang::Sounds::P3_6.data(), Lang::Sounds::P3_6.size());
-                ESP_LOGI(TAG, "Alarm ring");
+                ESP_LOGI(TAG, "Alarm ring, now status %d", device_state_);
                 alarm_m_->ClearRing();
             }
         }

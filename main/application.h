@@ -111,8 +111,7 @@ private:
     void OnClockTimer();
     void PlayLocalFile(const char* data, size_t size);
 
-    //test
-    AlarmManager* alarm_m_;
+
 };
 
 #endif // _APPLICATION_H_
