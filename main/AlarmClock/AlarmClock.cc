@@ -1,0 +1,150 @@
+#include "AlarmClock.h"
+
+
+#define TAG "AlarmManager"
+
+
+void AlarmManager::GetProximateAlarm(time_t now){
+    std::lock_guard<std::mutex> lock(mutex_);
+    current_alarm_ = nullptr;
+    for(auto& alarm : alarms_){
+        if(alarm.time > now && (current_alarm_ == nullptr || alarm.time < current_alarm_->time)){
+            current_alarm_ = &alarm;
+        }
+    } 
+}
+
+void AlarmManager::ClearOverdueAlarm(time_t now){
+    std::lock_guard<std::mutex> lock(mutex_);
+    for(auto it = alarms_.begin(); it != alarms_.end();){
+        if(it->time <= now){
+            it = alarms_.erase(it); // 删除过期的闹钟, 此时it指向下一个元素
+        }else{
+            it++;
+        }
+    }
+    GetProximateAlarm(now);
+}
+
+AlarmManager::AlarmManager(){
+
+    Settings settings_("alarm_clock", true); // 闹钟设置
+    // 从Setting里面读取闹钟列表
+    for(int i = 0; i < 10; i++){
+        std::string alarm_name = settings_.GetString("alarm_" + std::to_string(i));
+        if(alarm_name != ""){
+            Alarm alarm;
+            alarm.name = alarm_name;
+            alarm.time = settings_.GetInt("alarm_time_" + std::to_string(i));
+            alarms_.push_back(alarm);
+            ESP_LOGI(TAG, "Alarm %s set at %d", alarm.name.c_str(), alarm.time);
+        }
+    }
+
+    // 建立一个时钟
+    esp_timer_create_args_t timer_args = {
+        .callback = [](void* arg) {
+            AlarmManager* alarm_manager = (AlarmManager*)arg;
+            alarm_manager->OnAlarm(); // 闹钟响了
+        },
+        .arg = this,
+        .dispatch_method = ESP_TIMER_TASK,
+        .name = "alarm_timer"
+    };
+    esp_timer_create(&timer_args, &timer_);
+    time_t now = time(NULL);
+    // 获取最近的闹钟, 同时清除过期的闹钟
+    ClearOverdueAlarm(now);
+    
+    // 启动闹钟
+    if(current_alarm_ != nullptr){
+        int new_timer_time = current_alarm_->time - now;
+        esp_timer_start_once(timer_, new_timer_time * 1000000);
+    }
+}
+
+
+AlarmManager::~AlarmManager(){
+    if(timer_ != nullptr){
+        esp_timer_stop(timer_);
+        esp_timer_delete(timer_);
+    }
+}
+
+
+void AlarmManager::SetAlarm(int seconde_from_now, std::string alarm_name){
+    std::lock_guard<std::mutex> lock(mutex_);
+    Settings settings_("alarm_clock", true); // 闹钟设置
+    Alarm alarm;
+    alarm.name = alarm_name;
+    time_t now = time(NULL);
+    alarm.time = now + seconde_from_now;
+    alarms_.push_back(alarm);
+    // 从设置里面找到第一个空闲的闹钟
+    for(int i = 0; i < 10; i++){
+        if(settings_.GetString("alarm_" + std::to_string(i)) == ""){
+            settings_.SetString("alarm_" + std::to_string(i), alarm_name);
+            settings_.SetInt("alarm_time_" + std::to_string(i), alarm.time);
+            break;
+        }
+    }
+    ESP_LOGI(TAG, "Alarm %s set at %d", alarm.name.c_str(), alarm.time);
+    if(current_alarm_ == nullptr || alarm.time < current_alarm_->time){
+        // 如果当前没有闹钟或者新闹钟比当前闹钟早, 则重新设置定时器
+        esp_timer_stop(timer_);
+        esp_timer_start_once(timer_, seconde_from_now * 1000000);
+        current_alarm_ = &alarm;
+    }
+}
+
+void AlarmManager::OnAlarm(){
+    // 闹钟响了
+    std::lock_guard<std::mutex> lock(mutex_);
+    time_t now = time(NULL);
+    ESP_LOGI(TAG, "Alarm %s at %d", current_alarm_->name.c_str(), current_alarm_->time);
+    // 处理一下相同时间的闹钟
+    ClearOverdueAlarm(now);
+    if(current_alarm_ != nullptr){
+        int new_timer_time = current_alarm_->time - now;
+        esp_timer_start_once(timer_, new_timer_time * 1000000);
+    }
+}
+
+void AlarmManager::CancelAlarm(std::string alarm_name){
+    std::lock_guard<std::mutex> lock(mutex_);
+    Settings settings_("alarm_clock", true); // 闹钟设置
+    if(current_alarm_ != nullptr && current_alarm_->name == alarm_name){
+        current_alarm_ = nullptr;
+        esp_timer_stop(timer_); // 取消当前闹钟
+        ClearOverdueAlarm(time(NULL)); // 清除过期的闹钟
+        if(current_alarm_ != nullptr){
+            // 重新设置定时器
+            int new_timer_time = current_alarm_->time - time(NULL);
+            esp_timer_start_once(timer_, new_timer_time * 1000000);
+        }
+    }
+    for(auto it = alarms_.begin(); it != alarms_.end();){
+        if(it->name == alarm_name){
+            it = alarms_.erase(it);
+        }else{
+            it++;
+        }
+    }
+    for(int i = 0; i < 10; i++){
+        if(settings_.GetString("alarm_" + std::to_string(i)) == alarm_name){
+            settings_.SetString("alarm_" + std::to_string(i), "");
+            settings_.SetInt("alarm_time_" + std::to_string(i), 0);
+        }
+    }
+    
+}
+
+
+std::string AlarmManager::GetAlarmsStatus(){
+    std::lock_guard<std::mutex> lock(mutex_);
+    std::string status;
+    for(auto& alarm : alarms_){
+        status += alarm.name + " at " + std::to_string(alarm.time) + "\n";
+    }
+    return status;
+}

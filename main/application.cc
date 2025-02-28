@@ -159,6 +159,7 @@ void Application::CheckNewVersion() {
     }
 }
 
+// 显示激活码, 同时播放激活码的音频
 void Application::ShowActivationCode() {
     auto& message = ota_.GetActivationMessage();
     auto& code = ota_.GetActivationCode();
@@ -181,10 +182,10 @@ void Application::ShowActivationCode() {
     }};
 
     // This sentence uses 9KB of SRAM, so we need to wait for it to finish
-    Alert(Lang::Strings::ACTIVATION, message.c_str(), "happy", Lang::Sounds::P3_ACTIVATION);
+    Alert(Lang::Strings::ACTIVATION, message.c_str(), "happy", Lang::Sounds::P3_ACTIVATION); // 播放激活码的音频
     vTaskDelay(pdMS_TO_TICKS(1000));
     background_task_->WaitForCompletion();
-
+    // 从音频文件播放激活码
     for (const auto& digit : code) {
         auto it = std::find_if(digit_sounds.begin(), digit_sounds.end(),
             [digit](const digit_sound& ds) { return ds.digit == digit; });

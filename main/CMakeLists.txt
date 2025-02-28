@@ -28,6 +28,11 @@ set(INCLUDE_DIRS "." "display" "audio_codecs" "protocols" "audio_processing")
 file(GLOB IOT_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/iot/things/*.cc)
 list(APPEND SOURCES ${IOT_SOURCES})
 
+#添加AlarmClock相关文件
+file(GLOB ALARM_CLOCK_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/AlarmClock/*.cc)
+list(APPEND SOURCES ${ALARM_CLOCK_SOURCES})
+list(APPEND INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/AlarmClock)
+
 # 添加板级公共文件
 file(GLOB BOARD_COMMON_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/boards/common/*.cc)
 list(APPEND SOURCES ${BOARD_COMMON_SOURCES})
