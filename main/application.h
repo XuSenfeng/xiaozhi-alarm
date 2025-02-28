@@ -17,6 +17,8 @@
 #include "protocol.h"
 #include "ota.h"
 #include "background_task.h"
+//test
+#include "AlarmClock.h"
 
 #if CONFIG_USE_AUDIO_PROCESSING
 #include "wake_word_detect.h"
@@ -108,6 +110,9 @@ private:
     void ShowActivationCode();
     void OnClockTimer();
     void PlayLocalFile(const char* data, size_t size);
+
+    //test
+    AlarmManager* alarm_m_;
 };
 
 #endif // _APPLICATION_H_

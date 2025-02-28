@@ -521,6 +521,13 @@ void Application::Start() {
 
     SetDeviceState(kDeviceStateIdle);
     esp_timer_start_periodic(clock_timer_handle_, 1000000);
+    //test
+    // alarm_m_.SetAlarm(10, "alarm1");
+    while(!ota_.HasServerTime()){
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+    alarm_m_ = new AlarmManager();
+    alarm_m_->SetAlarm(10, "alarm1");
 }
 
 void Application::OnClockTimer() {
@@ -532,7 +539,7 @@ void Application::OnClockTimer() {
         // SystemInfo::PrintRealTimeStats(pdMS_TO_TICKS(1000));
         int free_sram = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
         int min_free_sram = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL);
-        ESP_LOGI(TAG, "Free internal: %u minimal internal: %u", free_sram, min_free_sram);
+        ESP_LOGI(TAG, "Free internal: %u minimal internal_app: %u", free_sram, min_free_sram);
 
         // If we have synchronized server time, set the status to clock "HH:MM" if the device is idle
         if (ota_.HasServerTime()) {
@@ -578,6 +585,13 @@ void Application::MainLoop() {
             lock.unlock();
             for (auto& task : tasks) {
                 task();
+            }
+        }
+        if(alarm_m_ != nullptr){
+            if(alarm_m_->IsRing()){
+                PlayLocalFile(Lang::Sounds::P3_6.data(), Lang::Sounds::P3_6.size());
+                ESP_LOGI(TAG, "Alarm ring");
+                alarm_m_->ClearRing();
             }
         }
     }

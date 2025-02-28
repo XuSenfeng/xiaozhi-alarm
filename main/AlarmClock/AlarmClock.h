@@ -28,12 +28,15 @@ public:
     void ClearOverdueAlarm(time_t now);
     void GetProximateAlarm(time_t now);
     void OnAlarm();
+    bool IsRing(){ return ring_flog; };
+    void ClearRing(){ring_flog = false;};
 
 private:
     std::vector<Alarm> alarms_; // 闹钟列表
     Alarm *current_alarm_; // 当前闹钟
     std::mutex mutex_; // 互斥锁
     esp_timer_handle_t timer_; // 定时器
+    bool ring_flog;
 };
 
 #endif
