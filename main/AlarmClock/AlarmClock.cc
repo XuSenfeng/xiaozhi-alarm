@@ -1,10 +1,11 @@
+
 #include "AlarmClock.h"
 #include "assets/lang_config.h"
 #include "board.h"
 #include "display.h"
 #define TAG "AlarmManager"
 
-
+#if CONFIG_USE_ALARM
 void AlarmManager::GetProximateAlarm(time_t now){
     current_alarm_ = nullptr;
     for(auto& alarm : alarms_){
@@ -184,3 +185,4 @@ std::string AlarmManager::GetAlarmsStatus(){
     }
     return status;
 }
+#endif

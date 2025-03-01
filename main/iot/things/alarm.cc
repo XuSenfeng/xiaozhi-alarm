@@ -1,8 +1,9 @@
+
 #include "iot/thing.h"
 #include "AlarmClock.h"
 #include "application.h"
 #include <esp_log.h>
-
+#if CONFIG_USE_ALARM
 #define TAG "AlarmIot"
 // extern AlarmManager* alarm_m_;
 namespace iot {
@@ -42,4 +43,5 @@ public:
 } // namespace iot
 
 DECLARE_THING(AlarmIot);
+#endif
 

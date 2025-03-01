@@ -8,7 +8,7 @@
 #include "time.h"
 #include <mutex>
 #include "settings.h"
-
+#if CONFIG_USE_ALARM
 struct Alarm {
     std::string name;
     int time;
@@ -38,5 +38,5 @@ private:
     esp_timer_handle_t timer_; // 定时器
     bool ring_flog;
 };
-
+#endif
 #endif

@@ -60,6 +60,7 @@ private:
             }
             app.ToggleChatState();
         });
+#if CONFIG_USE_ALARM
         //test
         boot_button_.OnLongPress([this]() {
             auto& app = Application::GetInstance();
@@ -70,6 +71,7 @@ private:
                 app.UpdateIotStates();
             }
         });
+#endif
     }
 
     void InitializeSt7789Display() {
@@ -115,7 +117,9 @@ private:
         auto& thing_manager = iot::ThingManager::GetInstance();
         thing_manager.AddThing(iot::CreateThing("Speaker"));
         thing_manager.AddThing(iot::CreateThing("Backlight"));
+#if CONFIG_USE_ALARM
         thing_manager.AddThing(iot::CreateThing("AlarmIot"));
+#endif
     }
 
 public:

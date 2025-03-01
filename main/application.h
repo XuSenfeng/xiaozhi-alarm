@@ -17,8 +17,10 @@
 #include "protocol.h"
 #include "ota.h"
 #include "background_task.h"
+#if CONFIG_USE_ALARM
 //test
 #include "AlarmClock.h"
+#endif
 
 #if CONFIG_USE_AUDIO_PROCESSING
 #include "wake_word_detect.h"
@@ -67,9 +69,11 @@ public:
     void UpdateIotStates();
     void Reboot();
     void WakeWordInvoke(const std::string& wake_word);
+#if CONFIG_USE_ALARM
     //test
     AlarmManager* alarm_m_ = nullptr;
     DeviceState alarm_last_state;
+#endif
 private:
     Application();
     ~Application();

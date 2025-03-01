@@ -521,13 +521,13 @@ void Application::Start() {
 
     SetDeviceState(kDeviceStateIdle);
     esp_timer_start_periodic(clock_timer_handle_, 1000000);
-    //test
-    // alarm_m_.SetAlarm(10, "alarm1");
+#if CONFIG_USE_ALARM
     while(!ota_.HasServerTime()){
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
     alarm_m_ = new AlarmManager();
     // alarm_m_->SetAlarm(10, "alarm1");
+#endif
 }
 
 void Application::OnClockTimer() {
@@ -587,6 +587,7 @@ void Application::MainLoop() {
                 task();
             }
         }
+#if CONFIG_USE_ALARM
         if(alarm_m_ != nullptr){
                 // 闹钟来了
             if(alarm_m_->IsRing()){
@@ -601,7 +602,9 @@ void Application::MainLoop() {
                 }
             }
         }
+#endif
     }
+
 }
 
 void Application::ResetDecoder() {
