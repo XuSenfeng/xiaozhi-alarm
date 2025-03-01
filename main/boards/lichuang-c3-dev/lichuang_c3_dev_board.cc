@@ -60,6 +60,16 @@ private:
             }
             app.ToggleChatState();
         });
+        //test
+        boot_button_.OnLongPress([this]() {
+            auto& app = Application::GetInstance();
+            if (app.alarm_m_ != nullptr) {
+                ESP_LOGI(TAG, "ClearRing");
+                app.alarm_m_->ClearRing();
+                app.SetDeviceState(kDeviceStateIdle);
+                app.UpdateIotStates();
+            }
+        });
     }
 
     void InitializeSt7789Display() {

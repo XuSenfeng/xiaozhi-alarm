@@ -67,7 +67,9 @@ public:
     void UpdateIotStates();
     void Reboot();
     void WakeWordInvoke(const std::string& wake_word);
-
+    //test
+    AlarmManager* alarm_m_ = nullptr;
+    DeviceState alarm_last_state;
 private:
     Application();
     ~Application();
@@ -110,7 +112,6 @@ private:
     void ShowActivationCode();
     void OnClockTimer();
     void PlayLocalFile(const char* data, size_t size);
-
 
 };
 

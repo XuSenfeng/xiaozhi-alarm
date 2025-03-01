@@ -1,6 +1,7 @@
 #include "AlarmClock.h"
 #include "assets/lang_config.h"
-
+#include "board.h"
+#include "display.h"
 #define TAG "AlarmManager"
 
 
@@ -14,7 +15,7 @@ void AlarmManager::GetProximateAlarm(time_t now){
 }
 
 void AlarmManager::ClearOverdueAlarm(time_t now){
-    // std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     Settings settings_("alarm_clock", true); // 闹钟设置
     for(auto it = alarms_.begin(); it != alarms_.end();){
         if(it->time <= now){
@@ -68,6 +69,7 @@ AlarmManager::AlarmManager(){
     // 启动闹钟
     if(current_alarm_ != nullptr){
         int new_timer_time = current_alarm_->time - now;
+        ESP_LOGI(TAG, "begin a alarm at %d", new_timer_time);
         esp_timer_start_once(timer_, new_timer_time * 1000000);
     }
 }
@@ -97,25 +99,45 @@ void AlarmManager::SetAlarm(int seconde_from_now, std::string alarm_name){
             break;
         }
     }
-    ESP_LOGI(TAG, "Alarm %s set at %d", alarm.name.c_str(), alarm.time);
-    if(current_alarm_ == nullptr || alarm.time < current_alarm_->time){
+    Alarm *alarm_first = nullptr;
+    for(auto& alarm : alarms_){
+        if(alarm_first == nullptr || alarm.time < alarm_first->time){
+            alarm_first = &alarm;
+        }
+    }
+    ESP_LOGI(TAG, "Alarm %s set at %d, now first %d", alarm.name.c_str(), alarm.time, alarm_first->time);
+    if(current_alarm_ == nullptr || alarm.time < alarm_first->time){
         // 如果新设置的闹钟比当前闹钟早, 则重新设置定时器
         if(current_alarm_ != nullptr){
             esp_timer_stop(timer_);
         }
         current_alarm_ = &alarm;
+        ESP_LOGI(TAG, "begin a alarm at %d", seconde_from_now);
         esp_timer_start_once(timer_, seconde_from_now * 1000000);
     }
 }
 
 void AlarmManager::OnAlarm(){
     ESP_LOGI(TAG, "=----ring----=");
+    auto display = Board::GetInstance().GetDisplay();
+    // 遍历闹钟
+    Alarm *alarm_first = nullptr;
+    for(auto& alarm : alarms_){
+        if(alarm.time <= time(NULL)){
+            alarm_first = &alarm;
+            break;
+        }
+    }
+
+
+    display->SetChatMessage("system", alarm_first->name.c_str());
     // // 闹钟响了
     time_t now = time(NULL);
     // 处理一下相同时间的闹钟
     ClearOverdueAlarm(now);
     if(current_alarm_ != nullptr){
         int new_timer_time = current_alarm_->time - now;
+        ESP_LOGI(TAG, "begin a alarm at %d", new_timer_time);
         esp_timer_start_once(timer_, new_timer_time * 1000000);
     }
     ring_flog = true;
@@ -133,6 +155,7 @@ void AlarmManager::CancelAlarm(std::string alarm_name){
         if(current_alarm_ != nullptr){
             // 重新设置定时器
             int new_timer_time = current_alarm_->time - time(NULL);
+            ESP_LOGI(TAG, "begin a alarm at %d", new_timer_time);
             esp_timer_start_once(timer_, new_timer_time * 1000000);
         }
     }
