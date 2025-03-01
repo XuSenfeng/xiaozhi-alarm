@@ -69,6 +69,7 @@ private:
                 app.alarm_m_->ClearRing();
                 app.SetDeviceState(kDeviceStateIdle);
                 app.UpdateIotStates();
+                app.audio_decode_queue_.clear();
             }
         });
 #endif

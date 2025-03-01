@@ -73,6 +73,7 @@ public:
     //test
     AlarmManager* alarm_m_ = nullptr;
     DeviceState alarm_last_state;
+    std::list<std::vector<uint8_t>> audio_decode_queue_;
 #endif
 private:
     Application();
@@ -97,8 +98,11 @@ private:
     // Audio encode / decode
     BackgroundTask* background_task_ = nullptr;
     std::chrono::steady_clock::time_point last_output_time_;
-    std::list<std::vector<uint8_t>> audio_decode_queue_;
+#if CONFIG_USE_ALARM
 
+#else
+    std::list<std::vector<uint8_t>> audio_decode_queue_;
+#endif
     std::unique_ptr<OpusEncoderWrapper> opus_encoder_;
     std::unique_ptr<OpusDecoderWrapper> opus_decoder_;
 
