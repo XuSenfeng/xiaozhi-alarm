@@ -179,3 +179,12 @@ config USE_AUDIO_PROCESSING
     help
         需要 ESP32 S3 与 AFE 支持
 endmenu
+
+menu "Xvsenfeng Personalize"
+
+    config USE_ALARM
+        bool "启用一个时钟"
+        default y
+        help
+            一个自定义的闹钟功能
+endmenu

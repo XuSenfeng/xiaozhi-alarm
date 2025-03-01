@@ -527,7 +527,7 @@ void Application::Start() {
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
     alarm_m_ = new AlarmManager();
-    alarm_m_->SetAlarm(10, "alarm1");
+    // alarm_m_->SetAlarm(10, "alarm1");
 }
 
 void Application::OnClockTimer() {
