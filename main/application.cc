@@ -597,7 +597,7 @@ void Application::MainLoop() {
                     SetDeviceState(kDeviceStateSpeaking); //强制设置为播放模式
                 }
                 if(audio_decode_queue_.empty()){
-                    PlayLocalFile(Lang::Sounds::P3_6.data(), Lang::Sounds::P3_6.size());
+                    PlayLocalFile(Lang::Sounds::P3_ALARM_RING.data(), Lang::Sounds::P3_ALARM_RING.size());
                     ESP_LOGI(TAG, "Alarm ring, now status %d", device_state_);
                 }
             }
