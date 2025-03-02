@@ -17,12 +17,12 @@ def encode_audio_to_opus(input_file, output_file):
         audio_int16 = audio_int16[0]
     print(sample_rate)
     # Initialize Opus encoder
-    encoder = opuslib.Encoder(24000, 1, opuslib.APPLICATION_VOIP)
+    encoder = opuslib.Encoder(16000, 1, opuslib.APPLICATION_VOIP)
 
     # Encode audio data to Opus packets
     # Save encoded data to file
     with open(output_file, 'wb') as f:
-        sample_rate = 24000 # 16000Hz
+        sample_rate = 16000 # 16000Hz
         duration = 60 # 60ms every frame
         frame_size = int(sample_rate * duration / 1000)
         for i in tqdm.tqdm(range(0, len(audio_int16) - frame_size, frame_size)):
