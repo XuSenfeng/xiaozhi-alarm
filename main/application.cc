@@ -29,7 +29,9 @@ static const char* const STATE_STRINGS[] = {
     "speaking",
     "upgrading",
     "activating",
+#if CONFIG_USE_ALARM
     "fatal_error",
+#endif
     "invalid_state"
 };
 
@@ -253,6 +255,19 @@ void Application::ToggleChatState() {
         } else if (device_state_ == kDeviceStateListening) {
             protocol_->CloseAudioChannel();
         }
+#if CONFIG_USE_ALARM
+        else if (device_state_ == kDeviceStateAlarm) {
+            alarm_m_->ClearRing();
+            SetDeviceState(kDeviceStateConnecting);
+            if (!protocol_->OpenAudioChannel()) {
+                SetDeviceState(kDeviceStateIdle);
+                return;
+            }
+            keep_listening_ = true;
+            protocol_->SendStartListening(kListeningModeAutoStop);
+            SetDeviceState(kDeviceStateListening);
+        }
+#endif
     });
 }
 
@@ -379,7 +394,11 @@ void Application::Start() {
         Schedule([this]() {
             auto display = Board::GetInstance().GetDisplay();
             display->SetChatMessage("system", "");
+#if CONFIG_USE_ALARM
+            if(device_state_ != kDeviceStateAlarm)
+#endif
             SetDeviceState(kDeviceStateIdle);
+            ESP_LOGI(TAG, "Audio channel closed");
         });
     });
     protocol_->OnIncomingJson([this, display](const cJSON* root) {
@@ -510,7 +529,32 @@ void Application::Start() {
                 AbortSpeaking(kAbortReasonWakeWordDetected);
             } else if (device_state_ == kDeviceStateActivating) {
                 SetDeviceState(kDeviceStateIdle);
+            } 
+#if CONFIG_USE_ALARM
+            else if(device_state_ == kDeviceStateAlarm){
+                alarm_m_->ClearRing();
+                SetDeviceState(kDeviceStateConnecting);
+                wake_word_detect_.EncodeWakeWordData();
+
+                if (!protocol_->OpenAudioChannel()) {
+                    ESP_LOGE(TAG, "Failed to open audio channel");
+                    SetDeviceState(kDeviceStateIdle);
+                    wake_word_detect_.StartDetection();
+                    return;
+                }
+                
+                std::vector<uint8_t> opus;
+                // Encode and send the wake word data to the server
+                while (wake_word_detect_.GetWakeWordOpus(opus)) {
+                    protocol_->SendAudio(opus);
+                }
+                // Set the chat state to wake word detected
+                protocol_->SendWakeWordDetected(wake_word);
+                ESP_LOGI(TAG, "Wake word detected: %s", wake_word.c_str());
+                keep_listening_ = true;
+                SetDeviceState(kDeviceStateListening);
             }
+#endif
 
             // Resume detection
             wake_word_detect_.StartDetection();
@@ -591,10 +635,19 @@ void Application::MainLoop() {
         if(alarm_m_ != nullptr){
                 // 闹钟来了
             if(alarm_m_->IsRing()){
-                if(device_state_ != kDeviceStateSpeaking){
+                if(device_state_ != kDeviceStateAlarm){
+                    if (device_state_ == kDeviceStateActivating) {
+                        Reboot();
+                        return;
+                    } else if (device_state_ == kDeviceStateSpeaking) {
+                        AbortSpeaking(kAbortReasonNone);
+                        aborted_ = false; // 不停止本地的播放
+                    } else if (device_state_ == kDeviceStateListening) {
+                        protocol_->CloseAudioChannel();
+                    }
                     alarm_last_state = device_state_;
                     ESP_LOGI(TAG, "Alarm ring, begging status %d", device_state_);
-                    SetDeviceState(kDeviceStateSpeaking); //强制设置为播放模式
+                    SetDeviceState(kDeviceStateAlarm); //强制设置为播放模式
                 }
                 if(audio_decode_queue_.empty() && background_task_->GetTaskNum() <= 10){
                     PlayLocalFile(Lang::Sounds::P3_ALARM_RING.data(), Lang::Sounds::P3_ALARM_RING.size());
@@ -766,6 +819,15 @@ void Application::SetDeviceState(DeviceState state) {
             audio_processor_.Stop();
 #endif
             break;
+#if CONFIG_USE_ALARM
+        case kDeviceStateAlarm:
+            ResetDecoder();
+            codec->EnableOutput(true);
+#if CONFIG_USE_AUDIO_PROCESSING
+            audio_processor_.Stop();
+#endif
+            break;
+#endif
         default:
             // Do nothing
             break;

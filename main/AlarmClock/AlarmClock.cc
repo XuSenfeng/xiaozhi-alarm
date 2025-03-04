@@ -141,7 +141,7 @@ void AlarmManager::OnAlarm(){
         }
     }
 
-    display->SetChatMessage("system", alarm_first->name.c_str());  // 显示闹钟名字
+    display->SetStatus(alarm_first->name.c_str());  // 显示闹钟名字
     // // 闹钟响了
     time_t now = time(NULL);
     // 处理一下相同时间的闹钟

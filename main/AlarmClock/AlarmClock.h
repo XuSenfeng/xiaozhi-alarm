@@ -30,7 +30,7 @@ public:
     Alarm *GetProximateAlarm(time_t now);
     void OnAlarm();
     bool IsRing(){ return ring_flag; };
-    void ClearRing(){ring_flag = false;};
+    void ClearRing(){ESP_LOGI("Alarm", "clear");ring_flag = false;};
 
 private:
     std::vector<Alarm> alarms_; // 闹钟列表

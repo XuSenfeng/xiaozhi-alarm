@@ -62,16 +62,16 @@ private:
         });
 #if CONFIG_USE_ALARM
         //test
-        boot_button_.OnLongPress([this]() {
-            auto& app = Application::GetInstance();
-            if (app.alarm_m_ != nullptr) {
-                ESP_LOGI(TAG, "ClearRing");
-                app.alarm_m_->ClearRing();
-                app.SetDeviceState(kDeviceStateIdle);
-                app.UpdateIotStates();
-                app.audio_decode_queue_.clear();
-            }
-        });
+        // boot_button_.OnLongPress([this]() {
+        //     auto& app = Application::GetInstance();
+        //     if (app.alarm_m_ != nullptr) {
+        //         ESP_LOGI(TAG, "ClearRing");
+        //         app.alarm_m_->ClearRing();
+        //         app.SetDeviceState(kDeviceStateIdle);
+        //         app.UpdateIotStates();
+        //         app.audio_decode_queue_.clear();
+        //     }
+        // });
 #endif
     }
 
