@@ -22,3 +22,51 @@
 
 使用小智的iot部分代码, 添加一个thing模块
 
+## 自定义音频
+
+不建议使用比较大的音频文件!!!, esp32的性能还是比较差的
+
+我的示例音频是[Free 闹钟铃声 Sound Effects Download - Pixabay](https://pixabay.com/zh/sound-effects/search/闹钟铃声/)网站的
+
+![image-20250302150627639](https://picture-01-1316374204.cos.ap-beijing.myqcloud.com/lenovo-picture/202503021506028.png)
+
+### 音频处理
+
+下载的音频需要转为opus格式, 可以使用虾哥的脚本进行转换, 但是原本的脚本有特定的分辨率限制, 我这里做了一点改动, 增加了分辨率转换, 使它可以支持所有的分辨率
+
+![image-20250302150838754](https://picture-01-1316374204.cos.ap-beijing.myqcloud.com/lenovo-picture/202503021508841.png)
+
+使用的时候需要安装对应的库
+
+```bash
+conda create -n xiaozhi-alarm python=3.10
+conda activate xiaozhi-alarm
+pip install librosa opuslib tqdm numpy
+```
+
+编码
+
+```bash
+python convert_audio_to_p3.py ringtone-249206.mp3 alarm_ring.p3
+```
+
+获取到的文件放在
+
+![image-20250302151157686](https://picture-01-1316374204.cos.ap-beijing.myqcloud.com/lenovo-picture/202503021511760.png)
+
+之后再lang_config.h文件里面添加你的配置(也可以使用脚本gen_lang.py)
+
+```python
+extern const char p3_alarm_ring_start[] asm("_binary_alarm_ring_p3_start");
+extern const char p3_alarm_ring_end[] asm("_binary_alarm_ring_p3_end");
+static const std::string_view P3_ALARM_RING {
+static_cast<const char*>(p3_alarm_ring_start),
+static_cast<size_t>(p3_alarm_ring_end - p3_alarm_ring_start)
+};
+```
+
+![image-20250302151902508](https://picture-01-1316374204.cos.ap-beijing.myqcloud.com/lenovo-picture/202503021519584.png)
+
+最后改一下实际播放的音频即可
+
+![image-20250302152058165](https://picture-01-1316374204.cos.ap-beijing.myqcloud.com/lenovo-picture/202503021520348.png)

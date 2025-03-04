@@ -8,6 +8,7 @@
 #include "time.h"
 #include <mutex>
 #include "settings.h"
+#include <atomic>
 #if CONFIG_USE_ALARM
 struct Alarm {
     std::string name;
@@ -26,17 +27,18 @@ public:
     // 获取闹钟列表
     std::string GetAlarmsStatus();
     void ClearOverdueAlarm(time_t now);
-    void GetProximateAlarm(time_t now);
+    Alarm *GetProximateAlarm(time_t now);
     void OnAlarm();
-    bool IsRing(){ return ring_flog; };
-    void ClearRing(){ring_flog = false;};
+    bool IsRing(){ return ring_flag; };
+    void ClearRing(){ring_flag = false;};
 
 private:
     std::vector<Alarm> alarms_; // 闹钟列表
-    Alarm *current_alarm_; // 当前闹钟
     std::mutex mutex_; // 互斥锁
     esp_timer_handle_t timer_; // 定时器
-    bool ring_flog;
+
+    std::atomic<bool> ring_flag{false}; 
+    std::atomic<bool> running_flag{false};
 };
 #endif
 #endif

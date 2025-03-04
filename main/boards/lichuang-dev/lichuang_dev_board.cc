@@ -85,6 +85,19 @@ private:
         boot_button_.OnPressUp([this]() {
             Application::GetInstance().StopListening();
         });
+        #if CONFIG_USE_ALARM
+        //test
+        boot_button_.OnLongPress([this]() {
+            auto& app = Application::GetInstance();
+            if (app.alarm_m_ != nullptr) {
+                ESP_LOGI(TAG, "ClearRing");
+                app.alarm_m_->ClearRing();
+                app.SetDeviceState(kDeviceStateIdle);
+                app.UpdateIotStates();
+                app.audio_decode_queue_.clear();
+            }
+        });
+        #endif
     }
 
     void InitializeSt7789Display() {
@@ -131,6 +144,9 @@ private:
         auto& thing_manager = iot::ThingManager::GetInstance();
         thing_manager.AddThing(iot::CreateThing("Speaker"));
         thing_manager.AddThing(iot::CreateThing("Backlight"));
+#if CONFIG_USE_ALARM
+        thing_manager.AddThing(iot::CreateThing("AlarmIot"));
+#endif
     }
 
 public:
