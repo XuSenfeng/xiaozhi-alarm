@@ -22,14 +22,17 @@ public:
 
     // 设置闹钟
     void SetAlarm(int seconde_from_now, std::string alarm_name);
-    // 取消闹钟
-    void CancelAlarm(std::string alarm_name);
-    // 获取闹钟列表
+    // 获取闹钟列表状态
     std::string GetAlarmsStatus();
+    // 清除过时的闹钟
     void ClearOverdueAlarm(time_t now);
+    // 获取从现在开始第一个响的闹钟
     Alarm *GetProximateAlarm(time_t now);
+    // 闹钟响了的处理函数
     void OnAlarm();
+    // 闹钟是不是响了的标志位
     bool IsRing(){ return ring_flag; };
+    // 清除闹钟标志位
     void ClearRing(){ESP_LOGI("Alarm", "clear");ring_flag = false;};
 
 private:

@@ -75,7 +75,6 @@ public:
 #if CONFIG_USE_ALARM
     //test
     AlarmManager* alarm_m_ = nullptr;
-    DeviceState alarm_last_state;
     std::list<std::vector<uint8_t>> audio_decode_queue_;
 #endif
 private:

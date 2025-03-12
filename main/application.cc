@@ -30,7 +30,7 @@ static const char* const STATE_STRINGS[] = {
     "upgrading",
     "activating",
 #if CONFIG_USE_ALARM
-    "fatal_error",
+    "alarm",
 #endif
     "invalid_state"
 };
@@ -258,14 +258,7 @@ void Application::ToggleChatState() {
 #if CONFIG_USE_ALARM
         else if (device_state_ == kDeviceStateAlarm) {
             alarm_m_->ClearRing();
-            SetDeviceState(kDeviceStateConnecting);
-            if (!protocol_->OpenAudioChannel()) {
-                SetDeviceState(kDeviceStateIdle);
-                return;
-            }
-            keep_listening_ = true;
-            protocol_->SendStartListening(kListeningModeAutoStop);
-            SetDeviceState(kDeviceStateListening);
+            SetDeviceState(kDeviceStateIdle);
         }
 #endif
     });
@@ -645,7 +638,6 @@ void Application::MainLoop() {
                     } else if (device_state_ == kDeviceStateListening) {
                         protocol_->CloseAudioChannel();
                     }
-                    alarm_last_state = device_state_;
                     ESP_LOGI(TAG, "Alarm ring, begging status %d", device_state_);
                     SetDeviceState(kDeviceStateAlarm); //强制设置为播放模式
                 }
