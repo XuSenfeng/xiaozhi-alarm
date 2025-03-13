@@ -10,7 +10,7 @@
 
 ### 闹钟部分
 
-![image-20250302101243469](https://picture-01-1316374204.cos.ap-beijing.myqcloud.com/lenovo-picture/202503021012557.png)
+![image-20250313095223239](https://picture-01-1316374204.cos.ap-beijing.myqcloud.com/lenovo-picture/202503130952377.png)
 
 首先闹钟部分最重要的是到时间以后进行提醒, 我这里使用的实现方式是计算所有的时钟里面会最先响应的那一个, 然后使用esp32的时钟在一定时间以后进入回调函数, 回调函数中显示一下注册时候的时钟的名字, 同时开始播放本地的音频(目前是那个6的语音)
 
