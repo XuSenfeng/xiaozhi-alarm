@@ -65,7 +65,7 @@ static const void* get_imgfont_path(const lv_font_t * font, uint32_t unicode, ui
 const lv_font_t* font_emoji_64_init(void) {
     static lv_font_t* font = NULL;
     if (font == NULL) {
-        font = lv_imgfont_create(64, get_imgfont_path, NULL);
+        font = lv_imgfont_create(128, get_imgfont_path, NULL);
         if (font == NULL) {
             LV_LOG_ERROR("Failed to allocate memory for emoji font");
             return NULL;
