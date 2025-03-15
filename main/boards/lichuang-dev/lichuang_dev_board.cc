@@ -12,7 +12,8 @@
 #include <driver/i2c_master.h>
 #include <driver/spi_common.h>
 #include <wifi_station.h>
-
+#include "esp_lcd_touch_ft5x06.h"
+#include "esp_lvgl_port.h"
 #define TAG "LichuangDevBoard"
 
 LV_FONT_DECLARE(font_puhui_20_4);
@@ -23,7 +24,7 @@ public:
     Pca9557(i2c_master_bus_handle_t i2c_bus, uint8_t addr) : I2cDevice(i2c_bus, addr) {
         WriteReg(0x01, 0x03);
         WriteReg(0x03, 0xf8);
-    }
+    };
 
     void SetOutputState(uint8_t bit, uint8_t level) {
         uint8_t data = ReadReg(0x01);
@@ -33,6 +34,7 @@ public:
 };
 
 
+i2c_master_dev_handle_t touch_i2c_device_;
 class LichuangDevBoard : public WifiBoard {
 private:
     i2c_master_bus_handle_t i2c_bus_;
@@ -40,6 +42,9 @@ private:
     Button boot_button_;
     LcdDisplay* display_;
     Pca9557* pca9557_;
+    
+    
+    esp_lcd_touch_handle_t tp;
 
     void InitializeI2c() {
         // Initialize I2C peripheral
@@ -100,6 +105,77 @@ private:
         #endif
     }
 
+    // 触摸屏初始化
+    esp_err_t bsp_touch_new(esp_lcd_touch_handle_t *ret_touch)
+    {
+        /* Initialize touch */
+        esp_lcd_touch_config_t tp_cfg = {
+            .x_max = 320,
+            .y_max = 240,
+            .rst_gpio_num = GPIO_NUM_NC, // Shared with LCD reset
+            .int_gpio_num = GPIO_NUM_NC, 
+            .levels = {
+                .reset = 0,
+                .interrupt = 0,
+            },
+            .flags = {
+                .swap_xy = 1,
+                .mirror_x = 1,
+                .mirror_y = 0,
+            },
+        };
+
+        esp_lcd_panel_io_handle_t tp_io_handle = NULL;
+        // esp_lcd_panel_io_i2c_config_t tp_io_config = ESP_LCD_TOUCH_IO_I2C_FT5x06_CONFIG();
+        // SSD1306 config
+        esp_lcd_panel_io_i2c_config_t io_config = {
+            .dev_addr = 0x38,
+            .on_color_trans_done = nullptr,
+            .user_ctx = nullptr,
+            .control_phase_bytes = 1,
+            .dc_bit_offset = 0,
+            .lcd_cmd_bits = 8,
+            .lcd_param_bits = 8,
+            .flags = {
+                .dc_low_on_data = 0,
+                .disable_control_phase = 1,
+            },
+            .scl_speed_hz = 400 * 1000,
+        };
+
+        ESP_ERROR_CHECK(esp_lcd_new_panel_io_i2c_v2(i2c_bus_, &io_config, &tp_io_handle));
+        ESP_ERROR_CHECK(esp_lcd_touch_new_i2c_ft5x06(tp_io_handle, &tp_cfg, ret_touch));
+        i2c_device_config_t i2c_device_cfg = {
+            .dev_addr_length = I2C_ADDR_BIT_LEN_7,
+            .device_address = 0x38,
+            .scl_speed_hz = 100000,
+            .scl_wait_us = 0,
+            .flags = {
+                .disable_ack_check = 0,
+            },
+        };
+        ESP_ERROR_CHECK(i2c_master_bus_add_device(i2c_bus_, &i2c_device_cfg, &touch_i2c_device_));
+        assert(touch_i2c_device_ != NULL);
+
+        return ESP_OK;
+    }
+
+    // 触摸屏初始化+添加LVGL接口
+    lv_indev_t *bsp_display_indev_init(lv_disp_t *disp)
+    {
+        /* 初始化触摸屏 */
+        ESP_ERROR_CHECK(bsp_touch_new(&tp));
+        assert(tp);
+
+        /* 添加LVGL接口 */
+        const lvgl_port_touch_cfg_t touch_cfg = {
+            .disp = disp,
+            .handle = tp,
+        };
+
+        return lvgl_port_add_touch(&touch_cfg);
+    }
+
     void InitializeSt7789Display() {
         esp_lcd_panel_io_handle_t panel_io = nullptr;
         esp_lcd_panel_handle_t panel = nullptr;
@@ -154,6 +230,7 @@ public:
         InitializeI2c();
         InitializeSpi();
         InitializeSt7789Display();
+        bsp_display_indev_init(display_->display_);
         InitializeButtons();
         InitializeIot();
     }
