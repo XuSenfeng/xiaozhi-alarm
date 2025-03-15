@@ -183,8 +183,27 @@ endmenu
 menu "Xvsenfeng Personalize"
 
     config USE_ALARM
-        bool "启用一个时钟"
+        bool "启用一个闹钟"
         default y
         help
             一个自定义的闹钟功能
+
+    config USE_TOUCH
+        bool "启用一个触摸屏"
+        default y
+        help
+            s3的开发板可以使用触摸屏
+
+    config USE_WEATHER
+        bool "启用天气功能"
+        default y
+        help
+            启用天气功能
+
+    config WEATHER_API_KEY
+        depends on USE_WEATHER
+        string "天气API KEY"
+        default "你的API_KEY, 可以从 https://lbs.qq.com/ 获取"
+        help
+            天气API KEY
 endmenu

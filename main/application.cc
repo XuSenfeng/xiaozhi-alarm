@@ -469,7 +469,9 @@ void Application::Start() {
         vTaskDelete(NULL);
     }, "check_new_version", 4096 * 2, this, 1, nullptr);
 
-
+#if CONFIG_USE_WEATHER
+    weather_ = new Weather();
+#endif
 #if CONFIG_USE_AUDIO_PROCESSING
     audio_processor_.Initialize(codec->input_channels(), codec->input_reference());
     audio_processor_.OnOutput([this](std::vector<int16_t>&& data) {
@@ -593,6 +595,14 @@ void Application::OnClockTimer() {
             });
         }
     }
+#if CONFIG_USE_WEATHER
+    if(count % (60 * 15) == 0){
+        // 天气, 每15分钟刷新一次
+        if(weather_ != nullptr){
+            weather_->flashWeather();
+        }
+    }
+#endif
 }
 
 void Application::Schedule(std::function<void()> callback) {

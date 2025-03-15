@@ -34,7 +34,7 @@ public:
 };
 
 
-i2c_master_dev_handle_t touch_i2c_device_;
+
 class LichuangDevBoard : public WifiBoard {
 private:
     i2c_master_bus_handle_t i2c_bus_;
@@ -42,10 +42,10 @@ private:
     Button boot_button_;
     LcdDisplay* display_;
     Pca9557* pca9557_;
-    
-    
+#if CONFIG_USE_TOUCH
+    i2c_master_dev_handle_t touch_i2c_device_;
     esp_lcd_touch_handle_t tp;
-
+#endif 
     void InitializeI2c() {
         // Initialize I2C peripheral
         i2c_master_bus_config_t i2c_bus_cfg = {
@@ -104,7 +104,7 @@ private:
         });
         #endif
     }
-
+#if CONFIG_USE_TOUCH
     // 触摸屏初始化
     esp_err_t bsp_touch_new(esp_lcd_touch_handle_t *ret_touch)
     {
@@ -160,6 +160,7 @@ private:
         return ESP_OK;
     }
 
+
     // 触摸屏初始化+添加LVGL接口
     lv_indev_t *bsp_display_indev_init(lv_disp_t *disp)
     {
@@ -175,7 +176,7 @@ private:
 
         return lvgl_port_add_touch(&touch_cfg);
     }
-
+#endif
     void InitializeSt7789Display() {
         esp_lcd_panel_io_handle_t panel_io = nullptr;
         esp_lcd_panel_handle_t panel = nullptr;
@@ -230,7 +231,9 @@ public:
         InitializeI2c();
         InitializeSpi();
         InitializeSt7789Display();
+#if CONFIG_USE_TOUCH
         bsp_display_indev_init(display_->display_);
+#endif
         InitializeButtons();
         InitializeIot();
     }
