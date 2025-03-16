@@ -223,6 +223,7 @@ private:
         thing_manager.AddThing(iot::CreateThing("Backlight"));
 #if CONFIG_USE_ALARM
         thing_manager.AddThing(iot::CreateThing("AlarmIot"));
+        thing_manager.AddThing(iot::CreateThing("Weather"));
 #endif
     }
 
