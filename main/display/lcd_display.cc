@@ -287,7 +287,7 @@ void LcdDisplay::SetupUI() {
     auto screen = lv_screen_active();
     lv_obj_set_style_text_font(screen, fonts_.text_font, 0);
     lv_obj_set_style_text_color(screen, lv_color_black(), 0);
-
+    
     /* Container */
     container_ = lv_obj_create(screen);
     lv_obj_set_size(container_, LV_HOR_RES, LV_VER_RES);
