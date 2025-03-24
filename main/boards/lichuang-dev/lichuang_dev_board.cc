@@ -14,6 +14,8 @@
 #include <wifi_station.h>
 #include "esp_lcd_touch_ft5x06.h"
 #include "esp_lvgl_port.h"
+
+#include "qmi8658.h"
 #define TAG "LichuangDevBoard"
 
 LV_FONT_DECLARE(font_puhui_20_4);
@@ -35,6 +37,8 @@ public:
 
 
 
+
+QMI8658* qmi8658_;
 class LichuangDevBoard : public WifiBoard {
 private:
     i2c_master_bus_handle_t i2c_bus_;
@@ -42,6 +46,7 @@ private:
     Button boot_button_;
     LcdDisplay* display_;
     Pca9557* pca9557_;
+    
 #if CONFIG_USE_TOUCH
     i2c_master_dev_handle_t touch_i2c_device_;
     esp_lcd_touch_handle_t tp;
@@ -64,6 +69,7 @@ private:
 
         // Initialize PCA9557
         pca9557_ = new Pca9557(i2c_bus_, 0x19);
+        qmi8658_ = new QMI8658(i2c_bus_, QMI8658_SENSOR_ADDR);
     }
 
     void InitializeSpi() {

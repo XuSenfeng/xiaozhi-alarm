@@ -15,6 +15,7 @@
 #include <cJSON.h>
 #include <driver/gpio.h>
 #include <arpa/inet.h>
+#include "qmi8658.h"
 
 #define TAG "Application"
 
@@ -603,6 +604,9 @@ void Application::OnClockTimer() {
         }
     }
 #endif
+    extern QMI8658* qmi8658_;
+    t_sQMI8658 data;
+    qmi8658_->show_qmi8658_data(&data);
 }
 
 void Application::Schedule(std::function<void()> callback) {
