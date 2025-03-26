@@ -206,4 +206,10 @@ menu "Xvsenfeng Personalize"
         default "你的API_KEY, 可以从 https://lbs.qq.com/ 获取"
         help
             天气API KEY
+
+    config USE_QMI8658
+        bool "使用体感"
+        default y
+        help
+            启用体感功能
 endmenu

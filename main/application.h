@@ -84,6 +84,11 @@ public:
 #if CONFIG_USE_WEATHER
     Weather * weather_ = nullptr;
 #endif
+#if CONFIG_USE_QMI8658
+    bool position_f = false, position_b = false, position_l = false, position_r = false;
+#endif
+volatile DeviceState device_state_ = kDeviceStateUnknown;
+std::unique_ptr<Protocol> protocol_;
 private:
     Application();
     ~Application();
@@ -95,10 +100,8 @@ private:
     Ota ota_;
     std::mutex mutex_;
     std::list<std::function<void()>> main_tasks_;
-    std::unique_ptr<Protocol> protocol_;
     EventGroupHandle_t event_group_ = nullptr;
     esp_timer_handle_t clock_timer_handle_ = nullptr;
-    volatile DeviceState device_state_ = kDeviceStateUnknown;
     bool keep_listening_ = false;
     bool aborted_ = false;
     bool voice_detected_ = false;

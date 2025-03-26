@@ -604,9 +604,11 @@ void Application::OnClockTimer() {
         }
     }
 #endif
+#if CONFIG_USE_QMI8658
     extern QMI8658* qmi8658_;
     t_sQMI8658 data;
     qmi8658_->show_qmi8658_data(&data);
+#endif
 }
 
 void Application::Schedule(std::function<void()> callback) {

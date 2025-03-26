@@ -83,6 +83,7 @@ SpiLcdDisplay::SpiLcdDisplay(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_h
     };
 
     display_ = lvgl_port_add_disp(&display_cfg);
+    // lv_disp_set_rotation(display_, LV_DISP_ROTATION_90);
     if (display_ == nullptr) {
         ESP_LOGE(TAG, "Failed to add display");
         return;
