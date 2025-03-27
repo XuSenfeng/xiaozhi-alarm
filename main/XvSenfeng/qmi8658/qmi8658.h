@@ -162,58 +162,58 @@ public:
             // 输出XYZ轴的倾角
             ESP_LOGI("QMI8658", "angle_x = %.1f  angle_y = %.1f",p->AngleX, p->AngleY);
 
-            // if(p->AngleX >= 60 && app.position_l == false){
-            //     if (app.device_state_ == kDeviceStateSpeaking) {
-            //         app.AbortSpeaking(kAbortReasonWakeWordDetected);
-            //     }
-            //     // if(app.position_r == true){
-            //     //     app.position_l = true;
-            //     //     std::string text = "把小智晃晕了";
-            //     //     app.protocol_->SendWakeWordDetected(text);
-            //     // }else{
-            //         app.position_l = true;
-            //         std::string text = "摸摸头";
-            //         app.protocol_->SendWakeWordDetected(text);
-            //     // }
-            // }
-            // if(p->AngleX <= -60 && app.position_r == false){
-            //     if (app.device_state_ == kDeviceStateSpeaking) {
-            //         app.AbortSpeaking(kAbortReasonWakeWordDetected);
-            //     }
-            //     // if(app.position_l == true){
-            //     //     app.position_r = true;
-            //     //     std::string text = "把小智晃晕了";
-            //     //     app.protocol_->SendWakeWordDetected(text);
-            //     // }else{
-            //         app.position_r = true;
-            //         std::string text = "捏捏脸";
-            //         app.protocol_->SendWakeWordDetected(text);
-            //     // }
-            // }
-            // if(p->AngleY >= 60 && app.position_f == false){
-            //     if (app.device_state_ == kDeviceStateSpeaking) {
-            //         app.AbortSpeaking(kAbortReasonWakeWordDetected);
-            //     }
-            //     app.position_f = true;
-            //     std::string text = "弹脑瓜";
-            //     app.protocol_->SendWakeWordDetected(text);
-            // }
-            // if(p->AngleY <= -60 && app.position_b == false){
-            //     if (app.device_state_ == kDeviceStateSpeaking) {
-            //         app.AbortSpeaking(kAbortReasonWakeWordDetected);
-            //     }
-            //     app.position_b = true;
-            //     std::string text = "拍拍肚子";
-            //     app.protocol_->SendWakeWordDetected(text);
-            // }
-            // if(p->AngleX < 30 && p->AngleX > -30){
-            //     app.position_l = false;
-            //     app.position_r = false;
-            // }
-            // if(p->AngleY < 30 && p->AngleY > -30){
-            //     app.position_f = false;
-            //     app.position_b = false;
-            // }
+            if(p->AngleX >= 60 && app.position_l == false){
+                if (app.device_state_ == kDeviceStateSpeaking) {
+                    app.AbortSpeaking(kAbortReasonWakeWordDetected);
+                }
+                if(app.position_r == true){
+                    app.position_l = true;
+                    std::string text = "把小智晃晕了";
+                    app.protocol_->SendWakeWordDetected(text);
+                }else{
+                    app.position_l = true;
+                    std::string text = "摸摸头";
+                    app.protocol_->SendWakeWordDetected(text);
+                }
+            }
+            if(p->AngleX <= -60 && app.position_r == false){
+                if (app.device_state_ == kDeviceStateSpeaking) {
+                    app.AbortSpeaking(kAbortReasonWakeWordDetected);
+                }
+                // if(app.position_l == true){
+                //     app.position_r = true;
+                //     std::string text = "把小智晃晕了";
+                //     app.protocol_->SendWakeWordDetected(text);
+                // }else{
+                    app.position_r = true;
+                    std::string text = "捏捏脸";
+                    app.protocol_->SendWakeWordDetected(text);
+                // }
+            }
+            if(p->AngleY >= 60 && app.position_f == false){
+                if (app.device_state_ == kDeviceStateSpeaking) {
+                    app.AbortSpeaking(kAbortReasonWakeWordDetected);
+                }
+                app.position_f = true;
+                std::string text = "弹脑瓜";
+                app.protocol_->SendWakeWordDetected(text);
+            }
+            if(p->AngleY <= -60 && app.position_b == false){
+                if (app.device_state_ == kDeviceStateSpeaking) {
+                    app.AbortSpeaking(kAbortReasonWakeWordDetected);
+                }
+                app.position_b = true;
+                std::string text = "拍拍肚子";
+                app.protocol_->SendWakeWordDetected(text);
+            }
+            if(p->AngleX < 30 && p->AngleX > -30){
+                app.position_l = false;
+                app.position_r = false;
+            }
+            if(p->AngleY < 30 && p->AngleY > -30){
+                app.position_f = false;
+                app.position_b = false;
+            }
         }
     }
 };
