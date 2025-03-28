@@ -19,6 +19,7 @@ dependencies:
   lvgl/lvgl: "~9.2.2"
   esp_lvgl_port: "~2.4.4"
   espressif/esp_lcd_touch_ft5x06: "~1.0.7"  # 触摸屏驱动
+  espressif/esp32-camera: "^2.0.10"
   ## Required IDF version
   idf:
     version: ">=5.3"

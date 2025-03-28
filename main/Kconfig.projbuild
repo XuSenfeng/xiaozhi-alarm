@@ -212,4 +212,10 @@ menu "Xvsenfeng Personalize"
         default y
         help
             启用体感功能
+
+    config USE_CAMERA
+        bool "使用相机"
+        default y
+        help
+            启用体感功能
 endmenu
