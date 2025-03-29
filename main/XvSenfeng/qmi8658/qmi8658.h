@@ -153,7 +153,7 @@ public:
         p->AngleZ = atan(temp)*57.29578f; // 180/π=57.29578
     }
     // 显示QMI8658的数据
-    void show_qmi8658_data(t_sQMI8658 *p)
+    void deal_qmi8658_data(t_sQMI8658 *p)
     {
         auto& app = Application::GetInstance();
 

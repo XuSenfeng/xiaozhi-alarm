@@ -35,7 +35,6 @@ private:
     LcdDisplay* display_;
     
 #if CONFIG_USE_TOUCH
-    i2c_master_dev_handle_t touch_i2c_device_;
     esp_lcd_touch_handle_t tp;
 #endif 
     void InitializeI2c() {
@@ -141,18 +140,6 @@ private:
 
         ESP_ERROR_CHECK(esp_lcd_new_panel_io_i2c_v2(i2c_bus_, &io_config, &tp_io_handle));
         ESP_ERROR_CHECK(esp_lcd_touch_new_i2c_ft5x06(tp_io_handle, &tp_cfg, ret_touch));
-        i2c_device_config_t i2c_device_cfg = {
-            .dev_addr_length = I2C_ADDR_BIT_LEN_7,
-            .device_address = 0x38,
-            .scl_speed_hz = 100000,
-            .scl_wait_us = 0,
-            .flags = {
-                .disable_ack_check = 0,
-            },
-        };
-        ESP_ERROR_CHECK(i2c_master_bus_add_device(i2c_bus_, &i2c_device_cfg, &touch_i2c_device_));
-        assert(touch_i2c_device_ != NULL);
-
         return ESP_OK;
     }
 
