@@ -228,19 +228,3 @@ void Display::SetBacklight(uint8_t brightness) {
     brightness_ = brightness;
 }
 
-void Display::ShowWeather(const char *message){
-    DisplayLockGuard lock(this);
-    if(weather_label_ == nullptr){
-        return;
-    }
-    lv_obj_add_flag(chat_message_label_, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_add_flag(emotion_label_, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_clear_flag(weather_label_, LV_OBJ_FLAG_HIDDEN);
-    lv_label_set_text(weather_label_, message);
-}
-void Display::ShowChat(){
-    DisplayLockGuard lock(this);
-    lv_obj_clear_flag(chat_message_label_, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_clear_flag(emotion_label_, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_add_flag(weather_label_, LV_OBJ_FLAG_HIDDEN);
-}

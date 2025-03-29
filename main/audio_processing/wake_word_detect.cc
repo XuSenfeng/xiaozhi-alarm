@@ -84,11 +84,14 @@ void WakeWordDetect::Initialize(int channels, bool reference) {
 
     afe_detection_data_ = esp_afe_sr_v1.create_from_config(&afe_config);
 
-    xTaskCreate([](void* arg) {
+    xTaskCreatePinnedToCore([](void* arg) {
+        ESP_LOGI(TAG, "Wake word detection task created running !!!!!!!!!!!!");
         auto this_ = (WakeWordDetect*)arg;
         this_->AudioDetectionTask();
         vTaskDelete(NULL);
-    }, "audio_detection", 4096 * 2, this, 1, nullptr);
+    }, "audio_detection", 4096 * 2, this, 1, nullptr, 1);
+    ESP_LOGI(TAG, "Wake word detection task created");
+    vTaskDelay(pdMS_TO_TICKS(100));
 }
 
 void WakeWordDetect::OnWakeWordDetected(std::function<void(const std::string& wake_word)> callback) {

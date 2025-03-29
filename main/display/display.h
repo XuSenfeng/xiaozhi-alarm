@@ -25,10 +25,6 @@ public:
     virtual void SetChatMessage(const char* role, const char* content);
     virtual void SetIcon(const char* icon);
     virtual void SetBacklight(uint8_t brightness);
-#if CONFIG_USE_WEATHER
-    virtual void ShowWeather(const char *message);
-    virtual void ShowChat();
-#endif
     inline int width() const { return width_; }
     inline int height() const { return height_; }
     inline uint8_t brightness() const { return brightness_; }
@@ -47,9 +43,6 @@ protected:
     lv_obj_t *mute_label_ = nullptr;
     lv_obj_t *battery_label_ = nullptr;
     lv_obj_t* chat_message_label_ = nullptr;
-#if CONFIG_USE_WEATHER
-    lv_obj_t* weather_label_ = nullptr;
-#endif 
     const char* battery_icon_ = nullptr;
     const char* network_icon_ = nullptr;
     bool muted_ = false;

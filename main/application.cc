@@ -16,6 +16,7 @@
 #include <driver/gpio.h>
 #include <arpa/inet.h>
 #include "qmi8658.h"
+#include "camera.h"
 
 #define TAG "Application"
 
@@ -469,21 +470,10 @@ void Application::Start() {
         app->CheckNewVersion();
         vTaskDelete(NULL);
     }, "check_new_version", 4096 * 2, this, 1, nullptr);
-
-#if CONFIG_USE_WEATHER
-    weather_ = new Weather();
+#if CONFIG_USE_CAMERA
+    start_webserver();
 #endif
 #if CONFIG_USE_AUDIO_PROCESSING
-    audio_processor_.Initialize(codec->input_channels(), codec->input_reference());
-    audio_processor_.OnOutput([this](std::vector<int16_t>&& data) {
-        background_task_->Schedule([this, data = std::move(data)]() mutable {
-            opus_encoder_->Encode(std::move(data), [this](std::vector<uint8_t>&& opus) {
-                Schedule([this, opus = std::move(opus)]() {
-                    protocol_->SendAudio(opus);
-                });
-            });
-        });
-    });
 
     wake_word_detect_.Initialize(codec->input_channels(), codec->input_reference());
     wake_word_detect_.OnVadStateChange([this](bool speaking) {
@@ -499,6 +489,19 @@ void Application::Start() {
             }
         });
     });
+
+    audio_processor_.Initialize(codec->input_channels(), codec->input_reference());
+    audio_processor_.OnOutput([this](std::vector<int16_t>&& data) {
+        background_task_->Schedule([this, data = std::move(data)]() mutable {
+            opus_encoder_->Encode(std::move(data), [this](std::vector<uint8_t>&& opus) {
+                Schedule([this, opus = std::move(opus)]() {
+                    protocol_->SendAudio(opus);
+                });
+            });
+        });
+    });
+
+
 
     wake_word_detect_.OnWakeWordDetected([this](const std::string& wake_word) {
         Schedule([this, &wake_word]() {
@@ -596,14 +599,6 @@ void Application::OnClockTimer() {
             });
         }
     }
-#if CONFIG_USE_WEATHER
-    if(count % (60 * 15) == 0){
-        // 天气, 每15分钟刷新一次
-        if(weather_ != nullptr){
-            weather_->flashWeather();
-        }
-    }
-#endif
 #if CONFIG_USE_QMI8658
     extern QMI8658* qmi8658_;
     t_sQMI8658 data;

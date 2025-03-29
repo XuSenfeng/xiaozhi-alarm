@@ -196,7 +196,7 @@ menu "Xvsenfeng Personalize"
 
     config USE_WEATHER
         bool "启用天气功能"
-        default y
+        default n
         help
             启用天气功能
 

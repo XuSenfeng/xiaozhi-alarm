@@ -49,11 +49,11 @@ void AudioProcessor::Initialize(int channels, bool reference) {
 
     afe_communication_data_ = esp_afe_vc_v1.create_from_config(&afe_config);
     
-    xTaskCreate([](void* arg) {
+    xTaskCreatePinnedToCore([](void* arg) {
         auto this_ = (AudioProcessor*)arg;
         this_->AudioProcessorTask();
         vTaskDelete(NULL);
-    }, "audio_communication", 4096 * 2, this, 1, NULL);
+    }, "audio_communication", 4096 * 2, this, 1, NULL, 0);
 }
 
 AudioProcessor::~AudioProcessor() {

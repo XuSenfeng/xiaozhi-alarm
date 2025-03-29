@@ -23,29 +23,16 @@
 LV_FONT_DECLARE(font_puhui_20_4);
 LV_FONT_DECLARE(font_awesome_20_4);
 
-class Pca9557 : public I2cDevice {
-public:
-    Pca9557(i2c_master_bus_handle_t i2c_bus, uint8_t addr) : I2cDevice(i2c_bus, addr) {
-        WriteReg(0x01, 0x03);
-        WriteReg(0x03, 0xf8);
-    };
 
-    void SetOutputState(uint8_t bit, uint8_t level) {
-        uint8_t data = ReadReg(0x01);
-        data = (data & ~(1 << bit)) | (level << bit);
-        WriteReg(0x01, data);
-    }
-};
 
 QMI8658* qmi8658_;
+Pca9557* pca9557_;
 class LichuangDevBoard : public WifiBoard {
 private:
     i2c_master_bus_handle_t i2c_bus_;
     i2c_master_dev_handle_t pca9557_handle_;
     Button boot_button_;
     LcdDisplay* display_;
-    Pca9557* pca9557_;
-    Camera* camera_;
     
 #if CONFIG_USE_TOUCH
     i2c_master_dev_handle_t touch_i2c_device_;
@@ -91,6 +78,7 @@ private:
             if (app.GetDeviceState() == kDeviceStateStarting && !WifiStation::GetInstance().IsConnected()) {
                 ResetWifiConfiguration();
             }
+            app.ToggleChatState();
         });
         boot_button_.OnPressDown([this]() {
             Application::GetInstance().StartListening();
@@ -186,58 +174,6 @@ private:
     }
 #endif
 
-#if CONFIG_USE_CAMERA
-
-    // 摄像头硬件初始化
-    void bsp_camera_init(void)
-    {
-        pca9557_->SetOutputState(2, 0);
-
-        camera_config_t config;
-        config.ledc_channel = LEDC_CHANNEL_1;  // LEDC通道选择  用于生成XCLK时钟 但是S3不用
-        config.ledc_timer = LEDC_TIMER_1; // LEDC timer选择  用于生成XCLK时钟 但是S3不用
-        config.pin_d0 = CAMERA_PIN_D0;
-        config.pin_d1 = CAMERA_PIN_D1;
-        config.pin_d2 = CAMERA_PIN_D2;
-        config.pin_d3 = CAMERA_PIN_D3;
-        config.pin_d4 = CAMERA_PIN_D4;
-        config.pin_d5 = CAMERA_PIN_D5;
-        config.pin_d6 = CAMERA_PIN_D6;
-        config.pin_d7 = CAMERA_PIN_D7;
-        config.pin_xclk = CAMERA_PIN_XCLK;
-        config.pin_pclk = CAMERA_PIN_PCLK;
-        config.pin_vsync = CAMERA_PIN_VSYNC;
-        config.pin_href = CAMERA_PIN_HREF;
-        config.pin_sccb_sda = -1;   // 这里写-1 表示使用已经初始化的I2C接口
-        config.pin_sccb_scl = CAMERA_PIN_SIOC;
-        config.sccb_i2c_port = 1;
-        config.pin_pwdn = CAMERA_PIN_PWDN;
-        config.pin_reset = CAMERA_PIN_RESET;
-        config.xclk_freq_hz = XCLK_FREQ_HZ;
-        config.pixel_format = PIXFORMAT_RGB565;
-        config.frame_size = FRAMESIZE_QVGA;
-        config.jpeg_quality = 12;
-        config.fb_count = 2;
-        config.fb_location = CAMERA_FB_IN_PSRAM;
-        config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
-
-        // camera init
-        esp_err_t err = esp_camera_init(&config); // 配置上面定义的参数
-        if (err != ESP_OK)
-        {
-            ESP_LOGE(TAG, "Camera init failed with error 0x%x", err);
-            return;
-        }
-
-        sensor_t *s = esp_camera_sensor_get(); // 获取摄像头型号
-
-        if (s->id.PID == GC0308_PID) {
-            s->set_hmirror(s, 1);  // 这里控制摄像头镜像 写1镜像 写0不镜像
-        }
-        camera_ = new Camera();
-    }
-
-#endif
 
     void InitializeSt7789Display() {
         esp_lcd_panel_io_handle_t panel_io = nullptr;
@@ -285,7 +221,7 @@ private:
         thing_manager.AddThing(iot::CreateThing("Backlight"));
 #if CONFIG_USE_ALARM
         thing_manager.AddThing(iot::CreateThing("AlarmIot"));
-        thing_manager.AddThing(iot::CreateThing("Weather"));
+        // thing_manager.AddThing(iot::CreateThing("Weather"));
 #endif
     }
 
@@ -296,9 +232,6 @@ public:
         InitializeSt7789Display();
 #if CONFIG_USE_TOUCH
         bsp_display_indev_init(display_->display_);
-#endif
-#if CONFIG_USE_CAMERA
-        // bsp_camera_init();
 #endif
         InitializeButtons();
         InitializeIot();

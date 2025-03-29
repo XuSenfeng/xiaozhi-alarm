@@ -18,9 +18,6 @@
 #include "ota.h"
 #include "background_task.h"
 
-#if CONFIG_USE_WEATHER
-#include "weather.h"
-#endif
 #if CONFIG_USE_ALARM
 //test
 #include "AlarmClock.h"
@@ -80,9 +77,6 @@ public:
     //test
     AlarmManager* alarm_m_ = nullptr;
     std::list<std::vector<uint8_t>> audio_decode_queue_;
-#endif
-#if CONFIG_USE_WEATHER
-    Weather * weather_ = nullptr;
 #endif
 #if CONFIG_USE_QMI8658
     bool position_f = false, position_b = false, position_l = false, position_r = false;

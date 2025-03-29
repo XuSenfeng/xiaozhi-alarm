@@ -3,6 +3,7 @@
 
 #include "esp_camera.h"
 #include "esp_http_server.h"
+#include "i2c_device.h"
 /***********************************************************/
 /****************    摄像头 ↓   ****************************/
 #define CAMERA_PIN_PWDN -1
@@ -27,56 +28,26 @@
 #define XCLK_FREQ_HZ 24000000
 
 void bsp_camera_init(void);
+class Pca9557 : public I2cDevice {
+public:
+    Pca9557(i2c_master_bus_handle_t i2c_bus, uint8_t addr) : I2cDevice(i2c_bus, addr) {
+        WriteReg(0x01, 0x03);
+        WriteReg(0x03, 0xf8);
+    };
 
+    void SetOutputState(uint8_t bit, uint8_t level) {
+        uint8_t data = ReadReg(0x01);
+        data = (data & ~(1 << bit)) | (level << bit);
+        WriteReg(0x01, data);
+    }
+};
 
 typedef struct {
     httpd_req_t *req;
     size_t len;
 } jpg_chunking_t;
 
-class Camera{
-public:
-    // 处理流 
-    static size_t jpg_encode_stream(void * arg, size_t index, const void* data, size_t len){
-        jpg_chunking_t *j = (jpg_chunking_t *)arg;
-        if(!index){
-            j->len = 0;
-        }
-        // 发送这个图片http响应
-        if(httpd_resp_send_chunk(j->req, (const char *)data, len) != ESP_OK){
-            return 0;
-        }
-        j->len += len;
-        return len;
-    }
-    
-    esp_err_t jpg_httpd_handler(httpd_req_t *req){
-        camera_fb_t * fb = NULL;
-        esp_err_t res = ESP_OK;
-    
-        fb = esp_camera_fb_get();
-        if (!fb) {
-            ESP_LOGE("Camera", "Camera capture failed");
-            httpd_resp_send_500(req);
-            return ESP_FAIL;
-        }
-        res = httpd_resp_set_type(req, "image/jpeg");
-        if(res == ESP_OK){
-            res = httpd_resp_set_hdr(req, "Content-Disposition", "inline; filename=capture.jpg");
-        }
-    
-        if(res == ESP_OK){
-                jpg_chunking_t jchunk = {req, 0}; // 输入输出参数
-                res = frame2jpg_cb(fb, 80, jpg_encode_stream, &jchunk)?ESP_OK:ESP_FAIL;
-                httpd_resp_send_chunk(req, NULL, 0);
-        }
-        esp_camera_fb_return(fb); // 处理结束以后把这部分的buf返回
-        return res;
-    }
-
-    
-};
-
+httpd_handle_t start_webserver(void);
 /********************    摄像头 ↑   *************************/
 /***********************************************************/
 
