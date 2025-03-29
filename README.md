@@ -70,3 +70,33 @@ static_cast<size_t>(p3_alarm_ring_end - p3_alarm_ring_start)
 最后改一下实际播放的音频即可
 
 ![image-20250302152058165](https://picture-01-1316374204.cos.ap-beijing.myqcloud.com/lenovo-picture/202503021520348.png)
+
+## 驱动移植
+
+### 触摸屏移植
+
+使用`espressif/esp_lcd_touch_ft5x06: "~1.0.7"  # 触摸屏驱动`这个驱动, 嘉立创默认的驱动程序, 但是原本的驱动使用的i2c版本比较低, 所以在初始化的时候使用`esp_lcd_new_panel_io_i2c_v2`进行初始化
+
+### 照相机移植
+
+同样是i2c驱动的问题, 默认的camera在5.3.2的时候使用的还是老版的i2c驱动, 把他的CMake文件中的5.4改成5.3, 之后去除找不到的一个头文件即可正常使用(我记得好像是一个`i2c_platform`之类的文件, 没有使用到)
+
+![image-20250329103455270](https://picture-01-1316374204.cos.ap-beijing.myqcloud.com/lenovo-picture/202503291034445.png)
+
+### 代码逻辑
+
+目前做的功能比较简陋, 只是把驱动最简单的使用起来的, 之后会进一步开发
+
+### 姿态检测
+
+目前使用的检测比较简单, 在小智本身的时钟驱动上边每秒一次进行检测, 如果检测到角度大于一定阈值, 发送一段信息给服务器
+
+### 照相机
+
+照相机服务非常占用内存, 所以只在拍照的时候启用一下, 由于图片的格式不适合使用iot原本的格式进行传输, 所以这里使用esp32作为一个http server, 在有访问请求的时候加载照相机返回一帧数据
+
+服务器这部分使用插件的形式, 判断出来使用照相机的请求的时候首先访问开发板的http服务器获取当前的图片, 之后使用coze的图片接口进行图片的识别
+
+![image-20250329104825927](https://picture-01-1316374204.cos.ap-beijing.myqcloud.com/lenovo-picture/202503291048116.png)
+
+> 插件文件放在 /server-plugins下边
