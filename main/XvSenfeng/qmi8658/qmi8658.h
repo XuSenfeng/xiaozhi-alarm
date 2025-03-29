@@ -158,11 +158,19 @@ public:
         auto& app = Application::GetInstance();
 
         if(app.device_state_ == kDeviceStateSpeaking || app.device_state_ == kDeviceStateListening){
-            qmi8658_fetch_angleFromAcc(p);
-            // 输出XYZ轴的倾角
-            ESP_LOGI("QMI8658", "angle_x = %.1f  angle_y = %.1f",p->AngleX, p->AngleY);
+            float X_tmp = 0, Y_tmp = 0;
+            for(int i = 0 ;i < 5; i++){
+                qmi8658_fetch_angleFromAcc(p);
+                // 输出XYZ轴的倾角
+                ESP_LOGI("QMI8658", "angle_x = %.1f  angle_y = %.1f",p->AngleX, p->AngleY);
+                X_tmp += p->AngleX;
+                Y_tmp += p->AngleY;
+                vTaskDelay(10 / portTICK_PERIOD_MS);
+            }
+            X_tmp /= 5;
+            Y_tmp /= 5;
 
-            if(p->AngleX >= 60 && app.position_l == false){
+            if(X_tmp >= 60 && app.position_l == false){
                 if (app.device_state_ == kDeviceStateSpeaking) {
                     app.AbortSpeaking(kAbortReasonWakeWordDetected);
                 }
@@ -176,7 +184,7 @@ public:
                     app.protocol_->SendWakeWordDetected(text);
                 }
             }
-            if(p->AngleX <= -60 && app.position_r == false){
+            if(X_tmp <= -60 && app.position_r == false){
                 if (app.device_state_ == kDeviceStateSpeaking) {
                     app.AbortSpeaking(kAbortReasonWakeWordDetected);
                 }
@@ -190,7 +198,7 @@ public:
                     app.protocol_->SendWakeWordDetected(text);
                 // }
             }
-            if(p->AngleY >= 60 && app.position_f == false){
+            if(Y_tmp >= 60 && app.position_f == false){
                 if (app.device_state_ == kDeviceStateSpeaking) {
                     app.AbortSpeaking(kAbortReasonWakeWordDetected);
                 }
@@ -198,7 +206,7 @@ public:
                 std::string text = "弹脑瓜";
                 app.protocol_->SendWakeWordDetected(text);
             }
-            if(p->AngleY <= -60 && app.position_b == false){
+            if(Y_tmp <= -60 && app.position_b == false){
                 if (app.device_state_ == kDeviceStateSpeaking) {
                     app.AbortSpeaking(kAbortReasonWakeWordDetected);
                 }
@@ -206,11 +214,11 @@ public:
                 std::string text = "拍拍肚子";
                 app.protocol_->SendWakeWordDetected(text);
             }
-            if(p->AngleX < 30 && p->AngleX > -30){
+            if(X_tmp < 30 && X_tmp > -30){
                 app.position_l = false;
                 app.position_r = false;
             }
-            if(p->AngleY < 30 && p->AngleY > -30){
+            if(Y_tmp < 30 && Y_tmp > -30){
                 app.position_f = false;
                 app.position_b = false;
             }
