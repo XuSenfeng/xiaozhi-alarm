@@ -1,20 +1,20 @@
 from plugins_func.register import register_function, ToolType, ActionResponse, Action
 from cozepy import Coze, TokenAuth, Message, ChatEventType, MessageObjectString  # noqa
 import requests  
-eyes_function_desc = {
+eyes_coze_function_desc = {
     "type": "function",
     "function": {
-        "name": "eyes",
-        "description": "小智的眼睛, 可以识别小智眼眼前的东西",
+        "name": "eyes_coze",
+        "description": "小智的眼睛, 可以识别小智眼前的东西",
         'parameters': {'type': 'object', 'properties': {}, 'required': []}
     }
 }
 
 
 
-@register_function('eyes', eyes_function_desc, ToolType.WAIT)
-def eyes():
-    url = 'http://开发板的ip地址/jpg'  
+@register_function('eyes_coze', eyes_coze_function_desc, ToolType.WAIT)
+def eyes_coze():
+    url = 'http://你的开发板ip/jpg'  
     response = requests.get(url, timeout=2000)
     response = requests.get(url, timeout=2000)
 
@@ -27,7 +27,7 @@ def eyes():
     from cozepy import COZE_CN_BASE_URL
 
     # Get an access_token through personal access token or oauth.
-    coze_api_token = "你的API KEY"
+    coze_api_token = "你的token"
     # The default access is api.coze.com, but if you need to access api.coze.cn,
     # please use base_url to configure the api endpoint to access
     coze_api_base = COZE_CN_BASE_URL
@@ -36,7 +36,7 @@ def eyes():
     coze = Coze(auth=TokenAuth(token=coze_api_token), base_url=coze_api_base)
 
     # Create a bot instance in Coze, copy the last number from the web link as the bot's ID.
-    bot_id = "机器人的id"
+    bot_id = "你的机器人id"
     # The user id identifies the identity of a user. Developers can use a custom business ID
     # or a random string.
     user_id = "abc123"
@@ -45,7 +45,7 @@ def eyes():
 
     # Call the upload interface to upload a picture requiring text recognition, and
     # obtain the file_id of the picture.
-    file_path = "tmp/image.jpg"
+    file_path = "tmp/image.jpg" # 上传图片
     file = coze.files.upload(file=Path(file_path))
 
     # Call the coze.chat.stream method to create a chat. The create method is a streaming
