@@ -22,7 +22,7 @@ esp_err_t jpg_httpd_handler(httpd_req_t *req){
     camera_fb_t * fb = NULL;
     esp_err_t res = ESP_OK;
 
-    fb = esp_camera_fb_get();
+    fb = esp_camera_fb_get(); // 第一帧的数据不使用
     esp_camera_fb_return(fb); // 处理结束以后把这部分的buf返回
     fb = esp_camera_fb_get();
     if (!fb) {
