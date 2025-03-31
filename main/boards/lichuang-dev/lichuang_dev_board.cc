@@ -24,8 +24,9 @@ LV_FONT_DECLARE(font_puhui_20_4);
 LV_FONT_DECLARE(font_awesome_20_4);
 
 
-
+#if CONFIG_USE_QMI8658
 QMI8658* qmi8658_;
+#endif
 Pca9557* pca9557_;
 class LichuangDevBoard : public WifiBoard {
 private:

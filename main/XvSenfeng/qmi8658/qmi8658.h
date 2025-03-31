@@ -6,7 +6,7 @@
 /*******************************************************************************/
 /***************************  姿态传感器 QMI8658 ↓   ****************************/
 #define  QMI8658_SENSOR_ADDR       0x6A   // QMI8658 I2C地址
-
+#if CONFIG_USE_QMI8658
 // QMI8658寄存器地址
 enum qmi8658_reg
 {
@@ -162,7 +162,7 @@ public:
             for(int i = 0 ;i < 5; i++){
                 qmi8658_fetch_angleFromAcc(p);
                 // 输出XYZ轴的倾角
-                ESP_LOGI("QMI8658", "angle_x = %.1f  angle_y = %.1f",p->AngleX, p->AngleY);
+                // ESP_LOGI("QMI8658", "angle_x = %.1f  angle_y = %.1f",p->AngleX, p->AngleY);
                 X_tmp += p->AngleX;
                 Y_tmp += p->AngleY;
                 vTaskDelay(10 / portTICK_PERIOD_MS);
@@ -225,5 +225,5 @@ public:
         }
     }
 };
-
+#endif
 #endif
