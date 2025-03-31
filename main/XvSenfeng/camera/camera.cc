@@ -1,7 +1,7 @@
 #include "camera.h"
 #include "esp_log.h"
 #include "esp_camera.h"
-
+#include "application.h"
 // 处理流 
 static size_t jpg_encode_stream(void * arg, size_t index, const void* data, size_t len){
     jpg_chunking_t *j = (jpg_chunking_t *)arg;
@@ -17,11 +17,16 @@ static size_t jpg_encode_stream(void * arg, size_t index, const void* data, size
 }
 
 esp_err_t jpg_httpd_handler(httpd_req_t *req){
-    bsp_camera_init();
-    vTaskDelay(100 / portTICK_PERIOD_MS);
     camera_fb_t * fb = NULL;
     esp_err_t res = ESP_OK;
-
+    auto& app = Application::GetInstance();
+    if(app.camera_flag == false) {
+        ESP_LOGE("Camera", "Camera can't use");
+        httpd_resp_send_500(req);
+        return ESP_FAIL;
+    }
+    bsp_camera_init();
+    vTaskDelay(100 / portTICK_PERIOD_MS);
     fb = esp_camera_fb_get(); // 第一帧的数据不使用
     esp_camera_fb_return(fb); // 处理结束以后把这部分的buf返回
     fb = esp_camera_fb_get();

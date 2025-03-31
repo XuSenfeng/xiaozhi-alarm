@@ -81,6 +81,9 @@ public:
 #if CONFIG_USE_QMI8658
     bool position_f = false, position_b = false, position_l = false, position_r = false;
 #endif
+#if CONFIG_USE_CAMERA
+    bool camera_flag = false;
+#endif
 volatile DeviceState device_state_ = kDeviceStateUnknown;
 std::unique_ptr<Protocol> protocol_;
 private:

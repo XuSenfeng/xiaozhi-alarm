@@ -80,25 +80,15 @@ private:
             }
             app.ToggleChatState();
         });
-        boot_button_.OnPressDown([this]() {
-            Application::GetInstance().StartListening();
-        });
-        boot_button_.OnPressUp([this]() {
-            Application::GetInstance().StopListening();
-        });
-        #if CONFIG_USE_ALARM
+#if CONFIG_USE_CAMERA
         //test
         boot_button_.OnLongPress([this]() {
             auto& app = Application::GetInstance();
-            if (app.alarm_m_ != nullptr) {
-                ESP_LOGI(TAG, "ClearRing");
-                app.alarm_m_->ClearRing();
-                app.SetDeviceState(kDeviceStateIdle);
-                app.UpdateIotStates();
-                app.audio_decode_queue_.clear();
-            }
+            app.camera_flag = !app.camera_flag;
+            std::string message = app.camera_flag ? "照相机打开了, 你可以看到眼前的东西了" : "我把照相机关闭了, 你暂时看不到我喽";
+            app.protocol_->SendWakeWordDetected(message);
         });
-        #endif
+#endif
     }
 #if CONFIG_USE_TOUCH
     // 触摸屏初始化
