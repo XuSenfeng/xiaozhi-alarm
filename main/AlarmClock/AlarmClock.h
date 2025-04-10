@@ -42,6 +42,13 @@ private:
 
     std::atomic<bool> ring_flag{false}; 
     std::atomic<bool> running_flag{false};
+
+    enum {
+        ALARM_RING,
+        ALARM_IOT,
+        ALARM_COMMUNICATION,
+        ALARM_FUNCTION
+    }alarm_state;
 };
 #endif
 #endif
