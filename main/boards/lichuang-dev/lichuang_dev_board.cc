@@ -85,8 +85,10 @@ private:
         boot_button_.OnLongPress([this]() {
             auto& app = Application::GetInstance();
             app.camera_flag = !app.camera_flag;
-            std::string message = app.camera_flag ? "照相机打开了, 你可以看到眼前的东西了" : "我把照相机关闭了, 你暂时看不到我喽";
-            app.protocol_->SendWakeWordDetected(message);
+            if(app.device_state_ == kDeviceStateListening){
+                std::string message = app.camera_flag ? "照相机打开了, 你可以看到眼前的东西了" : "我把照相机关闭了, 你暂时看不到我喽";
+                app.protocol_->SendWakeWordDetected(message);
+            }
         });
 #endif
     }
