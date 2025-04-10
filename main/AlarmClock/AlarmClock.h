@@ -1,3 +1,11 @@
+/*
+ * @Descripttion: 
+ * @Author: Xvsenfeng 1458612070@qq.com
+ * @LastEditors: Xvsenfeng 1458612070@qq.com
+ * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
+ */
+
+
 #ifndef ALARMCLOCK_H
 #define ALARMCLOCK_H
 

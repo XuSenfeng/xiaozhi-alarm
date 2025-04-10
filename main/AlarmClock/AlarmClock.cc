@@ -1,3 +1,9 @@
+/*
+ * @Descripttion: 
+ * @Author: Xvsenfeng 1458612070@qq.com
+ * @LastEditors: Xvsenfeng 1458612070@qq.com
+ * Copyright (c) 2025 by helloworldjiao@163.com, All Rights Reserved. 
+ */
 
 #include "AlarmClock.h"
 #include "assets/lang_config.h"
