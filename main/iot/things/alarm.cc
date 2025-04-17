@@ -12,15 +12,6 @@ namespace iot {
 class AlarmIot : public Thing {
 public:
     AlarmIot() : Thing("Alarm", "一个闹钟, 可以定时提醒") {
-        // 定义设备的属性
-        properties_.AddStringProperty("Alarm_List", "当前闹钟的描述", [this]() -> std::string {
-            auto& app = Application::GetInstance();
-            if(app.alarm_m_ == nullptr){
-                return std::string("AlarmManager is nullptr");
-            }
-            ESP_LOGI(TAG, "Alarm_List %s", app.alarm_m_->GetAlarmsStatus().c_str());
-            return app.alarm_m_->GetAlarmsStatus();
-        });
 
         // 定义设备可以被远程执行的指令
         methods_.AddMethod("SetAlarm", "设置一个闹钟", ParameterList({
