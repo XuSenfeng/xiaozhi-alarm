@@ -194,22 +194,10 @@ menu "Xvsenfeng Personalize"
         help
             s3的开发板可以使用触摸屏
 
-    config USE_WEATHER
-        bool "启用天气功能"
-        default n
-        help
-            启用天气功能
-
-    config WEATHER_API_KEY
-        depends on USE_WEATHER
-        string "天气API KEY"
-        default "你的API_KEY, 可以从 https://lbs.qq.com/ 获取"
-        help
-            天气API KEY
 
     config USE_QMI8658
         bool "使用体感"
-        default y
+        default n
         help
             启用体感功能
 
