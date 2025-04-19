@@ -1,3 +1,9 @@
+/*
+ * @Descripttion: 
+ * @Author: Xvsenfeng helloworldjiao@163.com
+ * @LastEditors: Xvsenfeng helloworldjiao@163.com
+ * Copyright (c) 2025 by helloworldjiao@163.com, All Rights Reserved. 
+ */
 #ifndef CAMERA_H
 #define CAMERA_H
 
@@ -48,6 +54,7 @@ typedef struct {
 } jpg_chunking_t;
 
 httpd_handle_t start_webserver(void);
+esp_err_t upload_image_to_server();
 /********************    摄像头 ↑   *************************/
 /***********************************************************/
 

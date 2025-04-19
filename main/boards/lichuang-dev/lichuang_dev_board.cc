@@ -85,6 +85,7 @@ private:
         boot_button_.OnLongPress([this]() {
             auto& app = Application::GetInstance();
             app.camera_flag = !app.camera_flag;
+            ESP_LOGI(TAG, "Camera %s", app.camera_flag ? "open" : "close");
             if(app.device_state_ == kDeviceStateListening){
                 std::string message = app.camera_flag ? "照相机打开了, 你可以看到眼前的东西了" : "我把照相机关闭了, 你暂时看不到我喽";
                 app.protocol_->SendWakeWordDetected(message);
@@ -199,6 +200,7 @@ private:
         auto& thing_manager = iot::ThingManager::GetInstance();
         thing_manager.AddThing(iot::CreateThing("Speaker"));
         thing_manager.AddThing(iot::CreateThing("Backlight"));
+        thing_manager.AddThing(iot::CreateThing("Camera"));
 #if CONFIG_USE_ALARM
         thing_manager.AddThing(iot::CreateThing("AlarmIot"));
         // thing_manager.AddThing(iot::CreateThing("Weather"));
