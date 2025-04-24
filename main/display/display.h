@@ -29,6 +29,7 @@ public:
     inline int height() const { return height_; }
     inline uint8_t brightness() const { return brightness_; }
     lv_display_t *display_ = nullptr;
+    lv_obj_t * type_change_label_ = nullptr;
 protected:
     int width_ = 0;
     int height_ = 0;

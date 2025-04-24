@@ -116,6 +116,7 @@ esp_err_t upload_image_to_server() {
     // 生成新 URL
     char http_url[100];
     snprintf(http_url, sizeof(http_url), "http://%s:8003/upload", ip);
+    ESP_LOGI("UPLOAD", "HTTP URL: %s", http_url);
     esp_http_client_config_t config = {
         .url = http_url,
         .method = HTTP_METHOD_POST,

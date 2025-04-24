@@ -360,11 +360,17 @@ void Application::Start() {
 
     // Initialize the protocol
     display->SetStatus(Lang::Strings::LOADING_PROTOCOL);
-#ifdef CONFIG_CONNECTION_TYPE_WEBSOCKET
-    protocol_ = std::make_unique<WebsocketProtocol>();
-#else
-    protocol_ = std::make_unique<MqttProtocol>();
-#endif
+    Settings settings("protocol_", false);
+    int protocol_type = settings.GetInt("protocol_type", 0);
+    if(protocol_type){
+        ESP_LOGI(TAG, "Using WebSocket protocol");
+        lv_label_set_text(display->type_change_label_, "W");
+        protocol_ = std::make_unique<WebsocketProtocol>();
+    }else{
+        ESP_LOGI(TAG, "Using MQTT protocol");
+        lv_label_set_text(display->type_change_label_, "M");
+        protocol_ = std::make_unique<MqttProtocol>();
+    }
     protocol_->OnNetworkError([this](const std::string& message) {
         Alert(Lang::Strings::ERROR, message.c_str(), "sad");
     });

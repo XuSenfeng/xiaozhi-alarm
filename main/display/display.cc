@@ -213,13 +213,20 @@ void Display::SetIcon(const char* icon) {
     }
     lv_label_set_text(emotion_label_, icon);
 }
-
+#include <string.h>
 void Display::SetChatMessage(const char* role, const char* content) {
+    
     DisplayLockGuard lock(this);
     if (chat_message_label_ == nullptr) {
         return;
     }
-    lv_label_set_text(chat_message_label_, content);
+    if(strcmp(content, "") != 0){
+        lv_obj_clear_flag(chat_message_label_, LV_OBJ_FLAG_HIDDEN);
+    }else{
+        lv_obj_add_flag(chat_message_label_, LV_OBJ_FLAG_HIDDEN);
+    }
+
+    lv_label_set_text(chat_message_label_, content); // Set the text with a newline before the content
 }
 
 void Display::SetBacklight(uint8_t brightness) {

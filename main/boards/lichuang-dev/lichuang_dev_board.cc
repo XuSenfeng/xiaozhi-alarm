@@ -99,8 +99,8 @@ private:
     {
         /* Initialize touch */
         esp_lcd_touch_config_t tp_cfg = {
-            .x_max = 320,
-            .y_max = 240,
+            .x_max = 240,
+            .y_max = 320,
             .rst_gpio_num = GPIO_NUM_NC, // Shared with LCD reset
             .int_gpio_num = GPIO_NUM_NC, 
             .levels = {
@@ -201,6 +201,7 @@ private:
         thing_manager.AddThing(iot::CreateThing("Speaker"));
         thing_manager.AddThing(iot::CreateThing("Backlight"));
         thing_manager.AddThing(iot::CreateThing("Camera"));
+        thing_manager.AddThing(iot::CreateThing("Protocol"));
 #if CONFIG_USE_ALARM
         thing_manager.AddThing(iot::CreateThing("AlarmIot"));
         // thing_manager.AddThing(iot::CreateThing("Weather"));

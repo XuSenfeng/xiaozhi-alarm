@@ -1,3 +1,9 @@
+/*
+ * @Descripttion: 
+ * @Author: Xvsenfeng helloworldjiao@163.com
+ * @LastEditors: Xvsenfeng helloworldjiao@163.com
+ * Copyright (c) 2025 by helloworldjiao@163.com, All Rights Reserved. 
+ */
 #include "lcd_display.h"
 
 #include <font_awesome_symbols.h>
@@ -10,6 +16,8 @@
 #include "assets/lang_config.h"
 
 #include "board.h"
+#include "settings.h"
+#include "application.h"
 
 #define TAG "LcdDisplay"
 #define LCD_LEDC_CH LEDC_CHANNEL_0
@@ -282,48 +290,98 @@ void LcdDisplay::Unlock() {
     lvgl_port_unlock();
 }
 
+void type_change_button_cb(lv_event_t* event) {
+    ESP_LOGI(TAG, "type_change_button_cb");
+    Settings *settings = new Settings("protocol_", true);
+    int old_type = settings->GetInt("protocol_type", 0);
+    settings->SetInt("protocol_type", !old_type);
+    ESP_LOGI(TAG, "change protocol type %d", !old_type);
+    delete settings;
+    auto& application = Application::GetInstance();
+    application.Reboot();
+
+}
+
+struct ThemeColors {
+    lv_color_t background;
+    lv_color_t text;
+    lv_color_t chat_background;
+    lv_color_t user_bubble;
+    lv_color_t assistant_bubble;
+    lv_color_t system_bubble;
+    lv_color_t system_text;
+    lv_color_t border;
+    lv_color_t low_battery;
+};
+
 void LcdDisplay::SetupUI() {
     DisplayLockGuard lock(this);
+    struct ThemeColors LIGHT_THEME;
+    LIGHT_THEME.background = lv_color_white();
+    LIGHT_THEME.text = lv_color_black();
+    LIGHT_THEME.chat_background = lv_color_hex(0xE0E0E0);
+    LIGHT_THEME.user_bubble = lv_color_hex(0x95EC69);
+    LIGHT_THEME.assistant_bubble = lv_color_white();
+    LIGHT_THEME.system_bubble = lv_color_hex(0xE0E0E0);
+    LIGHT_THEME.system_text = lv_color_hex(0x666666);
+    LIGHT_THEME.border = lv_color_hex(0xE0E0E0);
+    LIGHT_THEME.low_battery = lv_color_black();
 
     auto screen = lv_screen_active();
     lv_obj_set_style_text_font(screen, fonts_.text_font, 0);
-    lv_obj_set_style_text_color(screen, lv_color_black(), 0);
-    
+    lv_obj_set_style_text_color(screen, LIGHT_THEME.text, 0);
+    lv_obj_set_style_bg_color(screen, LIGHT_THEME.background, 0);
+
     /* Container */
     container_ = lv_obj_create(screen);
     lv_obj_set_size(container_, LV_HOR_RES, LV_VER_RES);
-    lv_obj_set_flex_flow(container_, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_style_pad_all(container_, 0, 0);
-    lv_obj_set_style_border_width(container_, 0, 0);
-    lv_obj_set_style_pad_row(container_, 0, 0);
+    lv_obj_set_style_pad_all(container_, 0, 0); // 设置内边距为0
+    lv_obj_set_style_border_width(container_, 0, 0); // 设置边框宽度为0
+    lv_obj_set_style_pad_row(container_, 0, 0); // 设置行间距为0
+    lv_obj_set_style_bg_color(container_, LIGHT_THEME.background, 0);
+    lv_obj_set_style_border_color(container_, LIGHT_THEME.border, 0);
 
     /* Status bar */
     status_bar_ = lv_obj_create(container_);
-    lv_obj_set_size(status_bar_, LV_HOR_RES, fonts_.text_font->line_height);
+    lv_obj_set_size(status_bar_, LV_HOR_RES, fonts_.text_font->line_height + 2);
     lv_obj_set_style_radius(status_bar_, 0, 0);
+    lv_obj_set_style_bg_color(status_bar_, LIGHT_THEME.background, 0);
+    lv_obj_set_style_text_color(status_bar_, LIGHT_THEME.text, 0);
+    lv_obj_set_align(status_bar_, LV_ALIGN_TOP_MID);
+    lv_obj_set_style_border_width(status_bar_, 0, 0); // 设置边框宽度为0
     
     /* Content */
     content_ = lv_obj_create(container_);
     lv_obj_set_scrollbar_mode(content_, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_style_radius(content_, 0, 0);
     lv_obj_set_width(content_, LV_HOR_RES);
-    lv_obj_set_flex_grow(content_, 1);
-
-    lv_obj_set_flex_flow(content_, LV_FLEX_FLOW_COLUMN); // 垂直布局（从上到下）
-    lv_obj_set_flex_align(content_, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_SPACE_EVENLY); // 子对象居中对齐，等距分布
+    lv_obj_set_height(content_, LV_VER_RES - fonts_.text_font->line_height - 2); // 设置高度为屏幕高度减去状态栏高度
+    lv_obj_set_style_pad_all(content_, 5, 0);
+    lv_obj_set_style_bg_color(content_, LIGHT_THEME.chat_background, 0);
+    lv_obj_set_style_border_color(content_, LIGHT_THEME.border, 0); // Border color for content
+    lv_obj_set_style_border_width(content_, 0, 0); // Border width for content
+    lv_obj_set_align(content_, LV_ALIGN_BOTTOM_MID); // Align content to the bottom of the screen
 
     emotion_label_ = lv_label_create(content_);
     lv_obj_set_style_text_font(emotion_label_, &font_awesome_30_4, 0);
+    lv_obj_set_style_text_color(emotion_label_, LIGHT_THEME.text, 0);
     lv_label_set_text(emotion_label_, FONT_AWESOME_AI_CHIP);
+    lv_obj_align(emotion_label_, LV_ALIGN_CENTER, 0, -32); // Center the label in the content area
 
     chat_message_label_ = lv_label_create(content_);
     lv_label_set_text(chat_message_label_, "");
     lv_obj_set_width(chat_message_label_, LV_HOR_RES * 0.9); // 限制宽度为屏幕宽度的 90%
-    lv_label_set_long_mode(chat_message_label_, LV_LABEL_LONG_WRAP); // 设置为自动换行模式
+    lv_obj_set_height(chat_message_label_, fonts_.text_font->line_height + 3); // 限制高度为字体高度的 2 倍
+    lv_label_set_long_mode(chat_message_label_, LV_LABEL_LONG_SCROLL_CIRCULAR); // 设置为自动换行模式
     lv_obj_set_style_text_align(chat_message_label_, LV_TEXT_ALIGN_CENTER, 0); // 设置文本居中对齐
-
+    lv_obj_set_style_text_color(chat_message_label_, LIGHT_THEME.text, 0);
+    lv_obj_set_style_bg_color(chat_message_label_, lv_color_hex3(0x0099ff), 0);
+    lv_obj_set_style_radius(chat_message_label_, 10, 0);
+    lv_obj_set_style_bg_opa(chat_message_label_, 100, 0);
+    lv_obj_set_style_text_align(chat_message_label_, LV_TEXT_ALIGN_CENTER, 0); // 设置文本居中对齐
+    lv_obj_align_to(chat_message_label_, emotion_label_, LV_ALIGN_OUT_BOTTOM_MID, 0, 65);  // Align chat message label below the emotion label
+    lv_obj_add_flag(chat_message_label_, LV_OBJ_FLAG_HIDDEN); // Enable scrolling when focused
     /* Status bar */
-    lv_obj_set_flex_flow(status_bar_, LV_FLEX_FLOW_ROW);
     lv_obj_set_style_pad_all(status_bar_, 0, 0);
     lv_obj_set_style_border_width(status_bar_, 0, 0);
     lv_obj_set_style_pad_column(status_bar_, 0, 0);
@@ -333,25 +391,65 @@ void LcdDisplay::SetupUI() {
     network_label_ = lv_label_create(status_bar_);
     lv_label_set_text(network_label_, "");
     lv_obj_set_style_text_font(network_label_, fonts_.icon_font, 0);
+    lv_obj_set_style_text_color(network_label_, LIGHT_THEME.text, 0);
+    lv_obj_set_style_text_align(network_label_, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_align(network_label_, LV_ALIGN_LEFT_MID); // Align to the left of the status bar
 
     notification_label_ = lv_label_create(status_bar_);
-    lv_obj_set_flex_grow(notification_label_, 1);
     lv_obj_set_style_text_align(notification_label_, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_style_text_color(notification_label_, LIGHT_THEME.text, 0);
     lv_label_set_text(notification_label_, "");
     lv_obj_add_flag(notification_label_, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_align_to(notification_label_, network_label_, LV_ALIGN_OUT_RIGHT_MID, 0, 0); // Align to the right of the network label
+    lv_obj_align(notification_label_, LV_ALIGN_CENTER, 0, 0); // Align to the left of the status bar
 
     status_label_ = lv_label_create(status_bar_);
-    lv_obj_set_flex_grow(status_label_, 1);
     lv_label_set_long_mode(status_label_, LV_LABEL_LONG_SCROLL_CIRCULAR);
     lv_obj_set_style_text_align(status_label_, LV_TEXT_ALIGN_CENTER, 0);
-    lv_label_set_text(status_label_, Lang::Strings::INITIALIZING);
+    lv_obj_set_style_text_color(status_label_, LIGHT_THEME.text, 0);
+    lv_label_set_text(status_label_, "Speaking");
     mute_label_ = lv_label_create(status_bar_);
     lv_label_set_text(mute_label_, "");
     lv_obj_set_style_text_font(mute_label_, fonts_.icon_font, 0);
+    lv_obj_set_style_text_color(mute_label_, LIGHT_THEME.text, 0);
+    lv_obj_align(status_label_, LV_ALIGN_CENTER, 0, 0); // Align to the center of the status bar
 
     battery_label_ = lv_label_create(status_bar_);
     lv_label_set_text(battery_label_, "");
     lv_obj_set_style_text_font(battery_label_, fonts_.icon_font, 0);
+    lv_obj_set_style_text_color(battery_label_, LIGHT_THEME.text, 0);
+    lv_obj_align(battery_label_, LV_ALIGN_RIGHT_MID, 0, 0); // Align to the right of the mute label
+
+    // low_battery_popup_ = lv_obj_create(screen);
+    // lv_obj_set_scrollbar_mode(low_battery_popup_, LV_SCROLLBAR_MODE_OFF);
+    // lv_obj_set_size(low_battery_popup_, LV_HOR_RES * 0.9, fonts_.text_font.line_height * 2);
+    // lv_obj_align(low_battery_popup_, LV_ALIGN_BOTTOM_MID, 0, 0);
+    // lv_obj_set_style_bg_color(low_battery_popup_, LIGHT_THEME.low_battery, 0);
+    // lv_obj_set_style_radius(low_battery_popup_, 10, 0);
+
+    // low_battery_label_ = lv_label_create(low_battery_popup_);
+    // lv_label_set_text(low_battery_label_, Lang::Strings::BATTERY_NEED_CHARGE);
+    // lv_obj_set_style_text_color(low_battery_label_, lv_color_white(), 0);
+    // lv_obj_center(low_battery_label_);
+    // lv_obj_add_flag(low_battery_popup_, LV_OBJ_FLAG_HIDDEN);
+    
+    lv_obj_t *type_change_button_ = lv_btn_create(status_bar_);
+    lv_obj_set_size(type_change_button_, 40, 60);
+    lv_obj_set_style_radius(type_change_button_, 3, 0);
+    lv_obj_set_style_bg_color(type_change_button_, lv_color_hex3(0xdddddd), 0);
+    lv_obj_set_style_bg_opa(type_change_button_, 255, 0);
+    lv_obj_set_style_border_width(type_change_button_, 0, 0);
+    lv_obj_set_style_border_color(type_change_button_, LIGHT_THEME.border, 0);
+    lv_obj_set_style_border_opa(type_change_button_, 255, 0);
+    lv_obj_set_height(type_change_button_, 22);
+    lv_obj_align(type_change_button_, LV_ALIGN_BOTTOM_RIGHT, -30, -3); // Align to the bottom right corner of the screen
+    type_change_label_ = lv_label_create(type_change_button_);
+    lv_obj_set_style_text_font(type_change_label_, fonts_.text_font, 0);
+    lv_label_set_text(type_change_label_, "");
+    lv_obj_set_height(type_change_label_, 20);
+    lv_obj_align(type_change_label_, LV_ALIGN_CENTER, 0, 0); // Center the label in the button
+    lv_obj_add_event_cb(type_change_button_, type_change_button_cb, LV_EVENT_CLICKED, NULL);
+
 }
 
 void LcdDisplay::SetEmotion(const char* emotion) {
