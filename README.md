@@ -1,5 +1,7 @@
 # 小智Alarm
 
+> https://github.com/XuSenfeng/xiaozhi-alarm-2_0_5 基于最新版本的适配
+>
 > https://github.com/XuSenfeng/xiaozhi-esp32 这个仓库有比较新的版本的小智移植闹钟项目
 
 
